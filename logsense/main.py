@@ -46,8 +46,8 @@ def ingest(log_file: str, source: str | None):
         engine = ClusterEngine()
         clusters = engine.process(entries)
         for c in clusters:
-            await repo.upsert_cluster(c)
-            await repo.add_cluster_members(c.id, c.entry_ids)
+            db_id = await repo.upsert_cluster(c)
+            await repo.add_cluster_members(db_id, c.entry_ids)
 
         click.echo(f"Ingested {len(entries)} entries → {len(clusters)} clusters")
 
@@ -139,6 +139,9 @@ def draft(cluster_id: str, platform: str, no_dry_run: bool):
             sys.exit(1)
 
         cluster_row = await repo.get_cluster_by_id(cluster_id)
+        if not cluster_row:
+            click.echo(f"Cluster {cluster_id} not found.", err=True)
+            sys.exit(1)
 
         import datetime as _dt
         from logsense.rca.models import RCAResult

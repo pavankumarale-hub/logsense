@@ -38,8 +38,8 @@ async def ingest_logs(req: IngestRequest) -> IngestResponse:
     engine = ClusterEngine()
     clusters = engine.process(entries)
     for cluster in clusters:
-        await repo.upsert_cluster(cluster)
-        await repo.add_cluster_members(cluster.id, cluster.entry_ids)
+        db_id = await repo.upsert_cluster(cluster)
+        await repo.add_cluster_members(db_id, cluster.entry_ids)
 
     return IngestResponse(
         entries_parsed=len(entries),

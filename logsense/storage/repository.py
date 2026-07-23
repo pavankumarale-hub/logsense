@@ -74,20 +74,34 @@ class LogRepository:
     #  Clusters                                                            #
     # ------------------------------------------------------------------ #
 
-    async def upsert_cluster(self, cluster: "Cluster") -> None:
+    async def upsert_cluster(self, cluster: "Cluster") -> str:
+        """Upsert a cluster and return the DB-persisted id.
+
+        On conflict the existing row's id is preserved; callers must use the
+        returned id (not cluster.id) when linking cluster_members rows.
+        Count is accumulated (existing + batch) so risk scores reflect the
+        true cumulative frequency across ingestion batches.
+        last_seen is only updated when the new value is later than the stored one,
+        preventing out-of-order batch ingestion from rolling the timestamp back.
+        """
         async with self._db.connection() as conn:
-            await conn.execute(
+            async with conn.execute(
                 """INSERT INTO clusters
                    (id, template, template_tokens, first_seen, last_seen,
                     count, max_severity, affected_services, risk_score, updated_at)
                    VALUES (?,?,?,?,?,?,?,?,?,?)
                    ON CONFLICT(template) DO UPDATE SET
-                     last_seen        = excluded.last_seen,
-                     count            = excluded.count,
-                     max_severity     = excluded.max_severity,
-                     affected_services= excluded.affected_services,
-                     risk_score       = excluded.risk_score,
-                     updated_at       = excluded.updated_at""",
+                     last_seen         = CASE
+                                           WHEN excluded.last_seen > clusters.last_seen
+                                           THEN excluded.last_seen
+                                           ELSE clusters.last_seen
+                                         END,
+                     count             = clusters.count + excluded.count,
+                     max_severity      = excluded.max_severity,
+                     affected_services = excluded.affected_services,
+                     risk_score        = excluded.risk_score,
+                     updated_at        = excluded.updated_at
+                   RETURNING id""",
                 (
                     cluster.id,
                     cluster.template,
@@ -100,8 +114,10 @@ class LogRepository:
                     cluster.risk_score,
                     datetime.now(timezone.utc).isoformat(),
                 ),
-            )
+            ) as cur:
+                row = await cur.fetchone()
             await conn.commit()
+        return row[0]  # surviving id (original on conflict, new on insert)
 
     async def add_cluster_members(self, cluster_id: str, entry_ids: list[str]) -> None:
         if not entry_ids:

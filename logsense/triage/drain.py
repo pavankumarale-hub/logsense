@@ -65,13 +65,16 @@ def _tokenize(message: str) -> list[str]:
 
 
 def _seq_similarity(tokens_a: list[str], tokens_b: list[str]) -> float:
-    """Fraction of token positions that match (excluding wildcard-vs-anything)."""
+    """Fraction of token positions where both sequences agree.
+
+    Wildcard-vs-wildcard counts as agreement: two messages that both reduced
+    to '<*>' at position i are structurally identical at that position.
+    Excluding wildcard matches (the previous behaviour) caused all-variable
+    messages (e.g. pure IP/number log lines) to score 0.0 and never cluster.
+    """
     if len(tokens_a) != len(tokens_b):
         return 0.0
-    matches = sum(
-        1 for a, b in zip(tokens_a, tokens_b)
-        if a == b and a != _WILDCARD
-    )
+    matches = sum(1 for a, b in zip(tokens_a, tokens_b) if a == b)
     return matches / len(tokens_a) if tokens_a else 0.0
 
 

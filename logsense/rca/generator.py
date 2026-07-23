@@ -52,16 +52,28 @@ class RCAGenerator:
             messages=[{"role": "user", "content": user_prompt}],
         )
 
-        raw_text = response.content[0].text.strip()
+        if not response.content:
+            raise ValueError("LLM returned an empty content list — no text to parse")
+        first_block = response.content[0]
+        if not hasattr(first_block, "text"):
+            raise ValueError(
+                f"LLM returned a non-text content block: {type(first_block).__name__}"
+            )
+        raw_text = first_block.text.strip()
         return self._parse_response(raw_text, cluster.id)
 
     def _parse_response(self, raw_text: str, cluster_id: str) -> RCAResult:
-        # Strip accidental markdown fences the model may add
+        # Strip accidental markdown fences the model may add.
+        # Only remove the opening and closing fence lines — not every line that
+        # starts with ``` — to avoid corrupting JSON field values that contain
+        # fenced code blocks (e.g. suggested_action with a shell snippet).
         if raw_text.startswith("```"):
             lines = raw_text.splitlines()
-            raw_text = "\n".join(
-                line for line in lines if not line.startswith("```")
-            ).strip()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            raw_text = "\n".join(lines).strip()
 
         try:
             data = json.loads(raw_text)
