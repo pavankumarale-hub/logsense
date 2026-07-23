@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run unit tests
+        run: pytest -m unit -v --cov=logsense --cov-report=xml --cov-report=term-missing
+
+      - name: Run integration tests (mocked LLM)
+        run: pytest -m integration -v --cov=logsense --cov-report=xml --cov-report=term-missing --cov-append
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install ruff
+      - run: ruff check logsense tests
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t logsense:ci .
+      - name: Smoke test — health endpoint
+        run: |
+          docker run -d --name logsense-ci \
+            -e ANTHROPIC_API_KEY=test-key \
+            -p 8000:8000 logsense:ci
+          sleep 5
+          curl -sf http://localhost:8000/health | grep '"status":"ok"'
+          docker stop logsense-ci
