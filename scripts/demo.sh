@@ -9,59 +9,100 @@ BOLD="\033[1m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
 CYAN="\033[0;36m"
+RED="\033[0;31m"
 RESET="\033[0m"
 
-step() { echo -e "\n${BOLD}${CYAN}▶ $1${RESET}"; }
-ok()   { echo -e "${GREEN}✓ $1${RESET}"; }
-info() { echo -e "${YELLOW}  $1${RESET}"; }
+step()  { echo -e "\n${BOLD}${CYAN}▶ $1${RESET}"; }
+ok()    { echo -e "${GREEN}✓ $1${RESET}"; }
+info()  { echo -e "${YELLOW}  $1${RESET}"; }
+warn()  { echo -e "${YELLOW}⚠ $1${RESET}"; }
+sep()   { echo -e "${BOLD}────────────────────────────────────────────────${RESET}"; }
 
-echo -e "${BOLD}╔═══════════════════════════════════════════╗${RESET}"
-echo -e "${BOLD}║       LogSense — End-to-End Demo          ║${RESET}"
-echo -e "${BOLD}╚═══════════════════════════════════════════╝${RESET}"
+echo ""
+echo -e "${BOLD}╔══════════════════════════════════════════════╗${RESET}"
+echo -e "${BOLD}║       LogSense — End-to-End Demo             ║${RESET}"
+echo -e "${BOLD}║  Ingest → Cluster → Score → LLM RCA → Draft ║${RESET}"
+echo -e "${BOLD}╚══════════════════════════════════════════════╝${RESET}"
+echo ""
 
-if [ ! -f ".env" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "ERROR: ANTHROPIC_API_KEY not set. Copy .env.example to .env and fill it in."
-  exit 1
+# ── API key check ──────────────────────────────────────────────────────────
+if [ -f ".env" ]; then
+  # shellcheck disable=SC1091
+  set -a && source .env && set +a
 fi
 
-# Activate venv if present
+HAS_API_KEY=true
+if [ -z "${ANTHROPIC_API_KEY:-}" ] || [ "${ANTHROPIC_API_KEY}" = "sk-ant-your-key-here" ]; then
+  warn "ANTHROPIC_API_KEY not set — steps 5 and 6 (LLM RCA + draft) will be skipped."
+  warn "Edit .env and set a real ANTHROPIC_API_KEY to run the full demo."
+  HAS_API_KEY=false
+fi
+
+# ── Activate venv if present ───────────────────────────────────────────────
 if [ -d ".venv" ]; then source .venv/bin/activate; fi
 
-# Clean state
-step "1/5  Resetting demo database"
+# ── Clean state ────────────────────────────────────────────────────────────
+step "1/6  Resetting demo database"
 rm -f demo.db
 export LOGSENSE_DB_PATH=demo.db
-ok "Clean database ready"
+ok "Clean database ready (demo.db)"
 
-step "2/5  Ingesting Spring Boot error logs"
+# ── Ingest Spring Boot logs ────────────────────────────────────────────────
+step "2/6  Ingesting Spring Boot error logs"
 logsense ingest tests/fixtures/spring_boot_errors.log --source spring-boot-demo
 ok "Spring Boot logs ingested"
 
-step "3/5  Ingesting Nginx error logs"
+# ── Ingest Nginx logs ─────────────────────────────────────────────────────
+step "3/6  Ingesting Nginx error logs"
 logsense ingest tests/fixtures/nginx_errors.log --source nginx-demo
 ok "Nginx logs ingested"
 
-step "4/5  Triaging clusters (ranked by risk score)"
-echo ""
+# ── Triage clusters ───────────────────────────────────────────────────────
+step "4/6  Triage — clusters ranked by risk score"
+sep
 logsense triage --limit 10
+sep
 
-step "5/5  Running LLM root cause analysis on top cluster"
+# ── LLM RCA ───────────────────────────────────────────────────────────────
+if [ "$HAS_API_KEY" = "false" ]; then
+  warn "Skipping LLM steps (no ANTHROPIC_API_KEY). Set the key and re-run for the full demo."
+  echo ""
+  echo -e "${BOLD}${GREEN}✓ Pipeline demo complete (ingestion + clustering).${RESET}"
+  echo -e "  To run the full demo including LLM RCA:"
+  echo -e "  ${CYAN}cp .env.example .env${RESET}  # add your ANTHROPIC_API_KEY"
+  echo -e "  ${CYAN}make demo${RESET}"
+  rm -f demo.db
+  exit 0
+fi
+
+step "5/6  LLM root cause analysis on top cluster"
 TOP_CLUSTER=$(logsense triage --limit 1 2>/dev/null | awk '{print $NF}')
-echo ""
 info "Top cluster ID: ${TOP_CLUSTER}"
 echo ""
 logsense rca "$TOP_CLUSTER"
 
-echo ""
-step "BONUS  Drafting GitHub incident report (dry run)"
+# ── Draft incident report ─────────────────────────────────────────────────
+step "6/6  Drafting GitHub incident report (dry run)"
 logsense draft "$TOP_CLUSTER" --platform github
-info "Dry run: no issue was created. Pass --no-dry-run to actually post."
+info "Dry run — no issue was created. Pass --no-dry-run to actually post."
 
+# ── Summary ───────────────────────────────────────────────────────────────
 echo ""
-echo -e "${BOLD}${GREEN}✓ Demo complete!${RESET}"
-echo -e "  REST API: ${CYAN}make serve${RESET}"
-echo -e "  MCP server: ${CYAN}make mcp${RESET}"
+sep
+echo -e "${BOLD}${GREEN}✓ Full end-to-end demo complete.${RESET}"
+echo ""
+echo -e "  What just ran:"
+echo -e "  ${CYAN}logsense ingest${RESET}   → parsed multi-format logs, extracted templates, scored clusters"
+echo -e "  ${CYAN}logsense triage${RESET}   → ranked clusters by risk (frequency × recency × severity)"
+echo -e "  ${CYAN}logsense rca${RESET}      → LLM root cause analysis with calibrated confidence"
+echo -e "  ${CYAN}logsense draft${RESET}    → structured GitHub incident report payload"
+echo ""
+echo -e "  Next:"
+echo -e "  ${CYAN}make serve${RESET}   — REST API on http://localhost:8000/docs"
+echo -e "  ${CYAN}make mcp${RESET}     — MCP server (connect from Claude Desktop / Claude Code)"
 echo -e "  Full docs: ${CYAN}docs/architecture.md${RESET}"
+sep
+echo ""
 
 # Clean up demo db
 rm -f demo.db
