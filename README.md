@@ -2,7 +2,7 @@
 
 **AI agent for log ingestion, error clustering, and automated root cause analysis.**
 
-[![CI](https://github.com/pavankumarale/logsense/actions/workflows/ci.yml/badge.svg)](https://github.com/pavankumarale/logsense/actions/workflows/ci.yml)
+[![CI](https://github.com/pavankumarale-hub/logsense/actions/workflows/ci.yml/badge.svg)](https://github.com/pavankumarale-hub/logsense/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -111,7 +111,7 @@ API is available at `http://localhost:8000`. Interactive docs: `http://localhost
 ### Local development
 
 ```bash
-git clone https://github.com/pavankumarale/logsense
+git clone https://github.com/pavankumarale-hub/logsense
 cd logsense
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
@@ -257,6 +257,35 @@ All runtime behaviour is controlled via environment variables. See
 - **pytest** — unit + integration tests (cassette-style mocking)
 - **Docker + docker-compose** — one-command deployment
 - **GitHub Actions** — CI with matrix testing on Python 3.11 + 3.12
+
+---
+
+## Limitations & Next Steps
+
+These are intentional scope decisions for v1, not gaps — naming them here is part of showing the engineering tradeoffs were deliberate.
+
+**Current scope:**
+
+- **Stateless batch clustering.** `ClusterEngine` is reconstructed per ingestion batch; the in-memory Drain tree starts fresh each call. Cross-batch count accumulation, max_severity preservation, and affected_services union all work correctly at the DB layer, but the Drain tree itself doesn't carry knowledge between batches. Fine for offline analysis; a streaming scenario would benefit from a persistent tree.
+- **Single-node SQLite.** WAL mode handles concurrent reads well, but SQLite is a single writer. Parallel ingestion workers at high throughput would require Postgres + asyncpg.
+- **Template extraction only.** Drain groups structurally similar messages. Semantically equivalent but syntactically different messages (`"Cannot connect to postgres"` vs `"Failed to reach database"`) land in separate clusters. The LLM RCA step can surface the connection, but triage will show them separately.
+- **No auth layer.** The REST API and MCP server are unauthenticated. Fine for local/dev; a shared deployment needs a proxy or API key gate.
+
+**What v2 would add:**
+
+1. **Semantic merge pass** — run Drain for cheap initial grouping, then merge clusters by embedding similarity as a second pass, gated behind `ENABLE_SEMANTIC_MERGE=true`. Keeps the hot path fast, semantic merge opt-in. (See [ADR 0001](docs/adr/0001-clustering-approach.md))
+2. **Streaming ingestion** — Kafka or SQS in front of the ingestion layer; `ClusterEngine` becomes a stateless worker reading from the queue; Drain state serialized to DB between batches for continuity.
+3. **Structured output via tool-use** — replace prompt-based JSON with Anthropic's `tools` parameter for schema-guaranteed output, eliminating the fence-strip / parse layer. (See [ADR 0002](docs/adr/0002-llm-prompt-design-and-confidence-scoring.md))
+4. **Feedback loop** — track which RCA hypotheses led to confirmed incident resolution and use that signal to weight future cluster ranking.
+
+---
+
+## Related Projects
+
+Other portfolio work from the same background (event-driven systems, fintech/automotive distributed systems):
+
+- **[Tickera](https://github.com/pavankumarale-hub/tickera)** — event-driven ticketing platform (Kafka, Spring Boot, microservices)
+- **[TxSentry](https://github.com/pavankumarale-hub/txsentry)** — real-time fraud detection agent for financial transactions
 
 ---
 
