@@ -65,17 +65,24 @@ def _tokenize(message: str) -> list[str]:
 
 
 def _seq_similarity(tokens_a: list[str], tokens_b: list[str]) -> float:
-    """Fraction of token positions where both sequences agree.
+    """Weighted similarity between two token sequences.
 
-    Wildcard-vs-wildcard counts as agreement: two messages that both reduced
-    to '<*>' at position i are structurally identical at that position.
-    Excluding wildcard matches (the previous behaviour) caused all-variable
-    messages (e.g. pure IP/number log lines) to score 0.0 and never cluster.
+    Literal-vs-literal match   → 1.0 credit (strong agreement)
+    Wildcard-vs-wildcard match → 0.5 credit (structural agreement only)
+    Any mismatch               → 0.0 credit
+
+    Half-credit for wildcard pairs preserves clustering of all-variable
+    messages (e.g. pure IP/number log lines that preprocess entirely to
+    '<*>' tokens) while preventing high-wildcard-density messages with
+    different literal tokens from falsely merging at the default threshold.
     """
-    if len(tokens_a) != len(tokens_b):
+    if len(tokens_a) != len(tokens_b) or not tokens_a:
         return 0.0
-    matches = sum(1 for a, b in zip(tokens_a, tokens_b) if a == b)
-    return matches / len(tokens_a) if tokens_a else 0.0
+    score = sum(
+        (1.0 if a == b and a != _WILDCARD else 0.5 if a == b else 0.0)
+        for a, b in zip(tokens_a, tokens_b)
+    )
+    return score / len(tokens_a)
 
 
 def _merge_templates(a: list[str], b: list[str]) -> list[str]:

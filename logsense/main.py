@@ -46,8 +46,7 @@ def ingest(log_file: str, source: str | None):
         engine = ClusterEngine()
         clusters = engine.process(entries)
         for c in clusters:
-            db_id = await repo.upsert_cluster(c)
-            await repo.add_cluster_members(db_id, c.entry_ids)
+            await repo.upsert_cluster(c)
 
         click.echo(f"Ingested {len(entries)} entries → {len(clusters)} clusters")
 

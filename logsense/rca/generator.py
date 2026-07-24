@@ -64,15 +64,20 @@ class RCAGenerator:
 
     def _parse_response(self, raw_text: str, cluster_id: str) -> RCAResult:
         # Strip accidental markdown fences the model may add.
-        # Only remove the opening and closing fence lines — not every line that
-        # starts with ``` — to avoid corrupting JSON field values that contain
-        # fenced code blocks (e.g. suggested_action with a shell snippet).
+        # Remove the opening fence line, then find the last ``` line and
+        # truncate there (including any trailing prose the model appended after
+        # the closing fence).  Searching from the end ensures inner ``` blocks
+        # inside JSON string values (e.g. suggested_action shell snippets) are
+        # preserved.
         if raw_text.startswith("```"):
             lines = raw_text.splitlines()
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines and lines[-1].startswith("```"):
-                lines = lines[:-1]
+            lines = lines[1:]  # opening fence always present (checked above)
+            close_idx = next(
+                (i for i in range(len(lines) - 1, -1, -1) if lines[i].startswith("```")),
+                None,
+            )
+            if close_idx is not None:
+                lines = lines[:close_idx]
             raw_text = "\n".join(lines).strip()
 
         try:

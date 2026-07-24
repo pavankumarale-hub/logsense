@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from logsense.ingestion.models import LogEntry
 from logsense.triage.models import Cluster
+from logsense.triage.scorer import score_cluster
 from logsense.rca.models import RCAResult
 from logsense.actions.models import IncidentDraft
 from .db import Database
@@ -75,14 +76,14 @@ class LogRepository:
     # ------------------------------------------------------------------ #
 
     async def upsert_cluster(self, cluster: "Cluster") -> str:
-        """Upsert a cluster and return the DB-persisted id.
+        """Atomically upsert a cluster, recompute risk_score from cumulative values,
+        and link member log entries — all in one transaction.
 
-        On conflict the existing row's id is preserved; callers must use the
-        returned id (not cluster.id) when linking cluster_members rows.
-        Count is accumulated (existing + batch) so risk scores reflect the
-        true cumulative frequency across ingestion batches.
-        last_seen is only updated when the new value is later than the stored one,
-        preventing out-of-order batch ingestion from rolling the timestamp back.
+        On conflict the existing row's id is preserved and returned.
+        max_severity is kept at the highest level seen across all batches.
+        affected_services is the union of all batches' service sets.
+        count accumulates; risk_score is recomputed from the cumulative count
+        and last_seen so the score always reflects true cluster history.
         """
         async with self._db.connection() as conn:
             async with conn.execute(
@@ -97,11 +98,34 @@ class LogRepository:
                                            ELSE clusters.last_seen
                                          END,
                      count             = clusters.count + excluded.count,
-                     max_severity      = excluded.max_severity,
-                     affected_services = excluded.affected_services,
-                     risk_score        = excluded.risk_score,
+                     max_severity      = CASE
+                                           WHEN (CASE excluded.max_severity
+                                                   WHEN 'CRITICAL' THEN 5
+                                                   WHEN 'ERROR'    THEN 4
+                                                   WHEN 'WARN'     THEN 3
+                                                   WHEN 'INFO'     THEN 2
+                                                   WHEN 'DEBUG'    THEN 1
+                                                   ELSE 0 END) >
+                                                (CASE clusters.max_severity
+                                                   WHEN 'CRITICAL' THEN 5
+                                                   WHEN 'ERROR'    THEN 4
+                                                   WHEN 'WARN'     THEN 3
+                                                   WHEN 'INFO'     THEN 2
+                                                   WHEN 'DEBUG'    THEN 1
+                                                   ELSE 0 END)
+                                           THEN excluded.max_severity
+                                           ELSE clusters.max_severity
+                                         END,
+                     affected_services = (
+                                           SELECT json_group_array(value)
+                                           FROM (
+                                             SELECT value FROM json_each(clusters.affected_services)
+                                             UNION
+                                             SELECT value FROM json_each(excluded.affected_services)
+                                           )
+                                         ),
                      updated_at        = excluded.updated_at
-                   RETURNING id""",
+                   RETURNING id, count, last_seen, max_severity""",
                 (
                     cluster.id,
                     cluster.template,
@@ -111,13 +135,40 @@ class LogRepository:
                     cluster.count,
                     cluster.max_severity,
                     json.dumps(sorted(cluster.affected_services)),
-                    cluster.risk_score,
+                    0.0,  # placeholder; overwritten by UPDATE below
                     datetime.now(timezone.utc).isoformat(),
                 ),
             ) as cur:
                 row = await cur.fetchone()
+
+            db_id: str = row["id"]
+
+            # Recompute risk_score using the cumulative values from RETURNING
+            # so frequency reflects total history, not just the current batch.
+            scoring_cluster = Cluster(
+                id=db_id,
+                template=cluster.template,
+                template_tokens=cluster.template_tokens,
+                first_seen=cluster.first_seen,
+                last_seen=datetime.fromisoformat(row["last_seen"]),
+                count=row["count"],
+                max_severity=row["max_severity"],
+                affected_services=cluster.affected_services,
+            )
+            risk_score = score_cluster(scoring_cluster, datetime.now(timezone.utc))
+            await conn.execute(
+                "UPDATE clusters SET risk_score = ? WHERE id = ?",
+                (risk_score, db_id),
+            )
+
+            if cluster.entry_ids:
+                await conn.executemany(
+                    "INSERT OR IGNORE INTO cluster_members (cluster_id, log_entry_id) VALUES (?,?)",
+                    [(db_id, eid) for eid in cluster.entry_ids],
+                )
+
             await conn.commit()
-        return row[0]  # surviving id (original on conflict, new on insert)
+        return db_id
 
     async def add_cluster_members(self, cluster_id: str, entry_ids: list[str]) -> None:
         if not entry_ids:

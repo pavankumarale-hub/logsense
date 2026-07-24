@@ -85,8 +85,7 @@ async def ingest_logs(content: str, source: str = "mcp-client") -> str:
     clusters = engine.process(entries)
 
     for cluster in clusters:
-        db_id = await repo.upsert_cluster(cluster)
-        await repo.add_cluster_members(db_id, cluster.entry_ids)
+        await repo.upsert_cluster(cluster)
 
     return json.dumps({
         "status": "ok",
