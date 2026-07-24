@@ -1,8 +1,8 @@
 # LogSense — Low-Level Design: Triage & RCA Pipeline
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Active
-**Last updated:** 2024-01-15
+**Last updated:** 2026-07-23
 
 ---
 
@@ -118,7 +118,11 @@ class LogEntry:
    when a token is unseen and the node is at max_children capacity
 
 5. At leaf: compute seq_similarity(existing_group.tokens, new_tokens)
-   seq_similarity = count(matching non-wildcard tokens) / total_tokens
+   seq_similarity = (literal matches × 1.0 + wildcard-vs-wildcard matches × 0.5) / total_tokens
+   Wildcard positions count as half a match: this allows all-variable messages
+   (e.g. pure IP/number lines that preprocess entirely to <*>) to cluster together,
+   while preventing high-wildcard messages with different literal tokens from
+   falsely merging at the default threshold.
 
 6a. If best_similarity >= sim_threshold:
       Merge: template[i] = token if match else <*>
@@ -214,10 +218,13 @@ Raw log content (string)
         ▼
   ClusterEngine.process()    # triage/cluster.py
     ├── DrainParser.add_entry()   # triage/drain.py — template extraction
-    └── score_cluster()           # triage/scorer.py — risk scoring
+    └── score_cluster()           # triage/scorer.py — batch-local risk score (initial)
         │
         ▼
   LogRepository.upsert_cluster()  # storage/repository.py
+    # Accumulates count, preserves max_severity and affected_services across batches,
+    # then recomputes risk_score from the cumulative DB values (not the batch-local
+    # score) so frequency reflects total cluster history, not just the current batch.
         │
         ▼  (on demand)
   RCAGenerator.generate()    # rca/generator.py — LLM call
@@ -237,7 +244,7 @@ Raw log content (string)
 | Failure | Impact | Mitigation |
 |---|---|---|
 | Anthropic API down | RCA unavailable | Cache previous RCA; surface error clearly |
-| Malformed LLM JSON | RCA generation fails | `_parse_response` strips fences, raises `ValueError` with raw text |
+| Malformed LLM JSON | RCA generation fails | `_parse_response` strips fences (handles trailing prose after closing fence), raises `ValueError` with raw text |
 | Drain template explosion | Too many clusters | `max_children` cap per node; `sim_threshold` merge |
 | SQLite lock contention | Slow concurrent writes | WAL mode enabled; async driver (aiosqlite) |
 | Log format not recognized | Entry skipped | Logged silently; `parse_log_lines` returns subset |
