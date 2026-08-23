@@ -3,6 +3,7 @@
 import asyncio
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import click
@@ -13,6 +14,7 @@ from logsense.storage.db import get_db
 from logsense.storage.repository import LogRepository
 from logsense.triage.cluster import ClusterEngine
 from logsense.rca.generator import RCAGenerator
+from logsense.rca.models import RCAResult
 from logsense.triage.models import Cluster
 from logsense.actions.github import GitHubIssueDrafter
 from logsense.actions.jira import JiraPayloadBuilder
@@ -99,13 +101,12 @@ def rca(cluster_id: str):
         samples = await repo.get_cluster_log_samples(cluster_id, limit=5)
         log_samples = [s["message"] for s in samples]
 
-        import datetime as _dt
         cluster = Cluster(
             id=cluster_row["id"],
             template=cluster_row["template"],
             template_tokens=json.loads(cluster_row["template_tokens"]),
-            first_seen=_dt.datetime.fromisoformat(cluster_row["first_seen"]),
-            last_seen=_dt.datetime.fromisoformat(cluster_row["last_seen"]),
+            first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
+            last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
             count=cluster_row["count"],
             max_severity=cluster_row["max_severity"],
             affected_services=set(json.loads(cluster_row["affected_services"])),
@@ -142,8 +143,6 @@ def draft(cluster_id: str, platform: str, no_dry_run: bool):
             click.echo(f"Cluster {cluster_id} not found.", err=True)
             sys.exit(1)
 
-        import datetime as _dt
-        from logsense.rca.models import RCAResult
         rca_obj = RCAResult(
             id=rca_row["id"], cluster_id=rca_row["cluster_id"],
             title=rca_row["title"], summary=rca_row["summary"],
@@ -153,13 +152,13 @@ def draft(cluster_id: str, platform: str, no_dry_run: bool):
             suggested_action=rca_row["suggested_action"],
             affected_service=rca_row["affected_service"],
             model_used=rca_row["model_used"],
-            generated_at=_dt.datetime.fromisoformat(rca_row["generated_at"]),
+            generated_at=datetime.fromisoformat(rca_row["generated_at"]),
         )
         cluster_obj = Cluster(
             id=cluster_row["id"], template=cluster_row["template"],
             template_tokens=json.loads(cluster_row["template_tokens"]),
-            first_seen=_dt.datetime.fromisoformat(cluster_row["first_seen"]),
-            last_seen=_dt.datetime.fromisoformat(cluster_row["last_seen"]),
+            first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
+            last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
             count=cluster_row["count"], max_severity=cluster_row["max_severity"],
             affected_services=set(json.loads(cluster_row["affected_services"])),
             risk_score=cluster_row["risk_score"] or 0.0,

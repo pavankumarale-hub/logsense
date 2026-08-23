@@ -1,6 +1,7 @@
 """POST /api/v1/rca — RCA generation and incident drafting endpoints."""
 
 import json
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -9,6 +10,7 @@ from logsense.storage.db import get_db
 from logsense.storage.repository import LogRepository
 from logsense.triage.models import Cluster
 from logsense.rca.generator import RCAGenerator
+from logsense.rca.models import RCAResult
 from logsense.actions.github import GitHubIssueDrafter
 from logsense.actions.jira import JiraPayloadBuilder
 
@@ -33,13 +35,12 @@ async def generate_rca(cluster_id: str, force: bool = Query(default=False)):
     samples = await repo.get_cluster_log_samples(cluster_id, limit=5)
     log_samples = [s["message"] for s in samples]
 
-    import datetime as _dt
     cluster = Cluster(
         id=cluster_row["id"],
         template=cluster_row["template"],
         template_tokens=json.loads(cluster_row["template_tokens"]),
-        first_seen=_dt.datetime.fromisoformat(cluster_row["first_seen"]),
-        last_seen=_dt.datetime.fromisoformat(cluster_row["last_seen"]),
+        first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
+        last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
         count=cluster_row["count"],
         max_severity=cluster_row["max_severity"],
         affected_services=set(json.loads(cluster_row["affected_services"])),
@@ -76,9 +77,6 @@ async def draft_incident(req: DraftRequest):
     if not cluster_row:
         raise HTTPException(status_code=404, detail="Cluster not found")
 
-    import datetime as _dt
-    from logsense.rca.models import RCAResult
-
     rca = RCAResult(
         id=rca_row["id"],
         cluster_id=rca_row["cluster_id"],
@@ -90,14 +88,14 @@ async def draft_incident(req: DraftRequest):
         suggested_action=rca_row["suggested_action"],
         affected_service=rca_row["affected_service"],
         model_used=rca_row["model_used"],
-        generated_at=_dt.datetime.fromisoformat(rca_row["generated_at"]),
+        generated_at=datetime.fromisoformat(rca_row["generated_at"]),
     )
     cluster = Cluster(
         id=cluster_row["id"],
         template=cluster_row["template"],
         template_tokens=json.loads(cluster_row["template_tokens"]),
-        first_seen=_dt.datetime.fromisoformat(cluster_row["first_seen"]),
-        last_seen=_dt.datetime.fromisoformat(cluster_row["last_seen"]),
+        first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
+        last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
         count=cluster_row["count"],
         max_severity=cluster_row["max_severity"],
         affected_services=set(json.loads(cluster_row["affected_services"])),

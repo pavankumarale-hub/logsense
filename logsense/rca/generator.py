@@ -13,7 +13,7 @@ import anthropic
 
 from logsense.config import get_settings
 from logsense.triage.models import Cluster
-from .models import RCAResult, ConfidenceLevel
+from .models import RCAResult
 from .prompts import SYSTEM_PROMPT, build_user_prompt
 
 
