@@ -3,6 +3,7 @@
 import uuid
 from datetime import datetime, timezone
 
+from logsense.config import get_settings
 from logsense.ingestion.models import LogEntry, SEVERITY_ORDER
 from .drain import DrainParser
 from .models import Cluster
@@ -18,7 +19,6 @@ class ClusterEngine:
     """
 
     def __init__(self, drain: DrainParser | None = None) -> None:
-        from logsense.config import get_settings
         cfg = get_settings()
         self._drain = drain or DrainParser(
             depth=cfg.drain_depth,

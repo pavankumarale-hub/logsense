@@ -93,15 +93,9 @@ def _normalize_level(raw: str) -> str:
 
 
 def _extract_trace_info(text: str) -> tuple[str | None, str | None]:
-    trace_id = None
-    corr_id = None
-    m = _TRACE_CTX.search(text)
-    if m:
-        trace_id = m.group(1)
-    m = _CORR_CTX.search(text)
-    if m:
-        corr_id = m.group(1)
-    return trace_id, corr_id
+    tm = _TRACE_CTX.search(text)
+    cm = _CORR_CTX.search(text)
+    return (tm.group(1) if tm else None, cm.group(1) if cm else None)
 
 
 def _try_json(line: str, source: str, now: datetime) -> LogEntry | None:

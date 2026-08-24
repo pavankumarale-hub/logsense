@@ -32,13 +32,14 @@ _SEVERITY_SCORE: dict[str, float] = {
 
 _FREQ_CAP = 1000.0      # log(1000) → frequency_score = 1.0
 _HALF_LIFE_HOURS = 1.0  # recency half-life
+_LN2 = math.log(2)     # ln(2) for exponential half-life decay
 
 
 def score_cluster(cluster: "Cluster", now: datetime) -> float:
     freq_score = min(math.log1p(cluster.count) / math.log1p(_FREQ_CAP), 1.0)
 
     age_hours = max((now - cluster.last_seen).total_seconds() / 3600, 0.0)
-    recency_score = math.exp(-0.693 * age_hours / _HALF_LIFE_HOURS)
+    recency_score = math.exp(-_LN2 * age_hours / _HALF_LIFE_HOURS)
 
     sev_score = _SEVERITY_SCORE.get(cluster.max_severity.upper(), 0.5)
 
