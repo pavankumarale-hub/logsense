@@ -1,6 +1,6 @@
 """GET /api/v1/triage — Cluster triage endpoints."""
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from logsense.storage.db import get_db
 from logsense.storage.repository import LogRepository
@@ -27,7 +27,6 @@ async def get_cluster(cluster_id: str):
     repo = LogRepository(db)
     cluster = await repo.get_cluster_by_id(cluster_id)
     if not cluster:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Cluster not found")
     samples = await repo.get_cluster_log_samples(cluster_id, limit=5)
     return {"cluster": cluster, "samples": samples}

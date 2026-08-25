@@ -15,6 +15,10 @@ from logsense.rca.models import RCAResult
 from logsense.triage.models import Cluster
 from .models import IncidentDraft
 
+def _para(text: str) -> dict:
+    return {"type": "paragraph", "content": [{"type": "text", "text": text}]}
+
+
 _PRIORITY_MAP = {
     "CRITICAL": "Highest",
     "ERROR": "High",
@@ -32,42 +36,15 @@ class JiraPayloadBuilder:
         priority = _PRIORITY_MAP.get(cluster.max_severity, "Medium")
 
         description_content = [
-            {
-                "type": "paragraph",
-                "content": [{"type": "text", "text": f"Summary: {rca.summary}"}],
-            },
-            {
-                "type": "paragraph",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"Root Cause Hypothesis: {rca.root_cause_hypothesis}",
-                    }
-                ],
-            },
-            {
-                "type": "paragraph",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": f"Suggested Action: {rca.suggested_action}",
-                    }
-                ],
-            },
-            {
-                "type": "paragraph",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": (
-                            f"Cluster template: {cluster.template} | "
-                            f"Occurrences: {cluster.count} | "
-                            f"Risk score: {cluster.risk_score:.3f} | "
-                            f"Confidence: {rca.confidence} ({rca.confidence_score:.0%})"
-                        ),
-                    }
-                ],
-            },
+            _para(f"Summary: {rca.summary}"),
+            _para(f"Root Cause Hypothesis: {rca.root_cause_hypothesis}"),
+            _para(f"Suggested Action: {rca.suggested_action}"),
+            _para(
+                f"Cluster template: {cluster.template} | "
+                f"Occurrences: {cluster.count} | "
+                f"Risk score: {cluster.risk_score:.3f} | "
+                f"Confidence: {rca.confidence} ({rca.confidence_score:.0%})"
+            ),
         ]
 
         payload = {

@@ -60,7 +60,7 @@ def build_user_prompt(
     severity: str,
     log_samples: list[str],
 ) -> str:
-    samples_text = "\n".join(f"  [{i+1}] {s}" for i, s in enumerate(log_samples[:5]))
+    samples_text = "\n".join(f"  [{i}] {s}" for i, s in enumerate(log_samples[:5], start=1))
     return USER_TEMPLATE.format(
         template=template,
         count=count,
