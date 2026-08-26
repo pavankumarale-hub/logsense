@@ -157,7 +157,7 @@ class DrainParser:
         # Levels 2..depth-1: prefix walk
         node = count_node
         for i, tok in enumerate(tokens[: self._depth - 1]):
-            key = tok if tok != _WILDCARD else _WILDCARD
+            key = tok
             if key not in node.children:
                 if len(node.children) >= self._max_children:
                     key = _WILDCARD

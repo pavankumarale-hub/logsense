@@ -58,6 +58,11 @@ class GitHubIssueDrafter:
         self._dry_run = dry_run if dry_run is not None else cfg.dry_run
         self._token = cfg.github_token
         self._repo = cfg.github_repo
+        self._headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
 
     def draft(self, rca: RCAResult, cluster: Cluster) -> IncidentDraft:
         """Build an issue payload.  If dry_run=False, also POST to GitHub."""
@@ -111,11 +116,7 @@ class GitHubIssueDrafter:
         url = f"{_GITHUB_API_BASE}/repos/{self._repo}/issues"
         resp = httpx.post(
             url,
-            headers={
-                "Authorization": f"Bearer {self._token}",
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-            },
+            headers=self._headers,
             json=payload,
             timeout=30.0,
         )

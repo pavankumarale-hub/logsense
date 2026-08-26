@@ -14,7 +14,7 @@ _LEVEL_ALIASES: dict[str, str] = {
     "SEVERE": "ERROR",
 }
 
-_VALID_LEVELS = set(SEVERITY_ORDER.keys())
+_VALID_LEVELS: frozenset[str] = frozenset({"DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"})
 
 
 def normalize(entries: list[LogEntry]) -> list[LogEntry]:
