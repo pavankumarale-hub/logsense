@@ -73,7 +73,7 @@ _MONTH_MAP = {
 }
 
 
-def _parse_datetime(date_str: str, time_str: str, year: int | None = None) -> datetime:
+def _parse_datetime(date_str: str, time_str: str) -> datetime:
     combined = f"{date_str} {time_str}".replace("/", "-").replace(",", ".")
     for fmt in (
         "%Y-%m-%d %H:%M:%S.%f",

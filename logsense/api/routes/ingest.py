@@ -25,8 +25,7 @@ class IngestResponse(BaseModel):
 @router.post("", response_model=IngestResponse)
 async def ingest_logs(req: IngestRequest) -> IngestResponse:
     """Parse raw log content and store entries + clusters."""
-    entries = parse_log_lines(req.content, source=req.source)
-    entries = normalize(entries)
+    entries = normalize(parse_log_lines(req.content, source=req.source))
 
     if not entries:
         raise HTTPException(status_code=422, detail="No parseable log lines found.")

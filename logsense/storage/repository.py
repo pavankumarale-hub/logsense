@@ -75,7 +75,7 @@ class LogRepository:
     #  Clusters                                                            #
     # ------------------------------------------------------------------ #
 
-    async def upsert_cluster(self, cluster: "Cluster") -> str:
+    async def upsert_cluster(self, cluster: Cluster) -> str:
         """Atomically upsert a cluster, recompute risk_score from cumulative values,
         and link member log entries — all in one transaction.
 
@@ -221,7 +221,7 @@ class LogRepository:
     #  RCA results                                                         #
     # ------------------------------------------------------------------ #
 
-    async def insert_rca_result(self, result: "RCAResult") -> None:
+    async def insert_rca_result(self, result: RCAResult) -> None:
         async with self._db.connection() as conn:
             await conn.execute(
                 """INSERT OR REPLACE INTO rca_results
@@ -261,7 +261,7 @@ class LogRepository:
     #  Incident drafts                                                     #
     # ------------------------------------------------------------------ #
 
-    async def insert_incident_draft(self, draft: "IncidentDraft") -> None:
+    async def insert_incident_draft(self, draft: IncidentDraft) -> None:
         async with self._db.connection() as conn:
             await conn.execute(
                 """INSERT OR REPLACE INTO incident_drafts
