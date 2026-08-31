@@ -3,6 +3,8 @@
 These tests are purely in-memory — no I/O, no LLM calls.
 """
 
+import json
+
 import pytest
 from datetime import timezone
 
@@ -91,7 +93,6 @@ class TestNginxFormat:
 
 class TestJsonFormat:
     def test_parses_json_line(self):
-        import json
         data = {
             "timestamp": "2024-01-15T10:23:45.123Z",
             "level": "ERROR",

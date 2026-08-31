@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -56,7 +57,7 @@ async def generate_rca(cluster_id: str, force: bool = Query(default=False)):
 
 class DraftRequest(BaseModel):
     cluster_id: str
-    platform: str = "github"
+    platform: Literal["github", "jira"] = "github"
     dry_run: bool = True
 
 

@@ -9,7 +9,6 @@ exercise (requires Atlassian OAuth or API token configuration).
 """
 
 import uuid
-from datetime import datetime, timezone
 
 from logsense.rca.models import RCAResult
 from logsense.triage.models import Cluster
@@ -69,5 +68,4 @@ class JiraPayloadBuilder:
             platform="jira",
             payload=payload,
             status="draft",
-            created_at=datetime.now(timezone.utc),
         )

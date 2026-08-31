@@ -8,9 +8,7 @@ This design is intentional for a public demo: nobody should accidentally
 spam a real GitHub tracker.
 """
 
-import json
 import uuid
-from datetime import datetime, timezone
 
 import httpx
 
@@ -105,7 +103,6 @@ class GitHubIssueDrafter:
             payload=payload,
             status=status,
             external_url=external_url,
-            created_at=datetime.now(timezone.utc),
         )
 
     def _create_issue(self, payload: dict) -> str:
