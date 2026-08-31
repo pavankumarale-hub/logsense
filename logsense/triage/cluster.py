@@ -27,8 +27,7 @@ class ClusterEngine:
         )
         # group_id -> Cluster
         self._clusters: dict[str, Cluster] = {}
-        # Drain group_id -> our Cluster.id (they differ because Drain reassigns
-        # group ids when templates merge)
+        # Drain LogGroup.id -> application Cluster.id
         self._group_to_cluster: dict[str, str] = {}
 
     def process(self, entries: list[LogEntry]) -> list[Cluster]:

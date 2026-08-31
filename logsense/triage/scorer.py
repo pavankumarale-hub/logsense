@@ -19,7 +19,6 @@ Final score is in [0.0, 1.0].  Clusters are ranked descending.
 import math
 from datetime import datetime
 
-from logsense.ingestion.models import SEVERITY_ORDER
 from .models import Cluster
 
 _SEVERITY_SCORE: dict[str, float] = {

@@ -27,7 +27,7 @@ def normalize(entries: list[LogEntry]) -> list[LogEntry]:
 
 
 def _normalize_level(level: str) -> str:
-    upper = level.upper().strip()
+    upper = level.strip().upper()
     mapped = _LEVEL_ALIASES.get(upper, upper)
     return mapped if mapped in _VALID_LEVELS else "INFO"
 
