@@ -29,8 +29,7 @@ CASSETTE_PATH = FIXTURE_DIR / "cassettes" / "rca_response.json"
 
 def _load_cassette() -> MagicMock:
     """Build a MagicMock that mimics the Anthropic API response."""
-    with open(CASSETTE_PATH) as f:
-        cassette = json.load(f)
+    cassette = json.loads(CASSETTE_PATH.read_text())
 
     content_block = MagicMock()
     content_block.text = cassette["content"][0]["text"]
@@ -126,7 +125,7 @@ class TestRCAPipeline:
     def test_rca_handles_markdown_fenced_response(self, MockAnthropic):
         """Model sometimes wraps JSON in ```json fences — generator should strip them."""
         mock_client = MockAnthropic.return_value
-        raw_json = json.loads(Path(CASSETTE_PATH).read_text())["content"][0]["text"]
+        raw_json = json.loads(CASSETTE_PATH.read_text())["content"][0]["text"]
 
         fenced_response = MagicMock()
         fenced_response.content = [MagicMock(text=f"```json\n{raw_json}\n```")]

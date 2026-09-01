@@ -150,9 +150,7 @@ class DrainParser:
     def _route(self, tokens: list[str]) -> LogGroup:
         # Level 1: token count bucket
         count_key = str(len(tokens))
-        if count_key not in self._root.children:
-            self._root.children[count_key] = PrefixNode()
-        count_node = self._root.children[count_key]
+        count_node = self._root.children.setdefault(count_key, PrefixNode())
 
         # Levels 2..depth-1: prefix walk
         node = count_node

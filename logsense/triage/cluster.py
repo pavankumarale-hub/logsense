@@ -25,7 +25,7 @@ class ClusterEngine:
             sim_threshold=cfg.drain_sim_threshold,
             max_children=cfg.drain_max_children,
         )
-        # group_id -> Cluster
+        # cluster_id -> Cluster
         self._clusters: dict[str, Cluster] = {}
         # Drain LogGroup.id -> application Cluster.id
         self._group_to_cluster: dict[str, str] = {}
