@@ -21,6 +21,22 @@ class RCAResult:
     model_used: str
     generated_at: datetime
 
+    @classmethod
+    def from_row(cls, row: dict) -> "RCAResult":
+        return cls(
+            id=row["id"],
+            cluster_id=row["cluster_id"],
+            title=row["title"],
+            summary=row["summary"],
+            root_cause_hypothesis=row["root_cause_hypothesis"],
+            confidence=row["confidence"],  # type: ignore[arg-type]
+            confidence_score=row["confidence_score"],
+            suggested_action=row["suggested_action"],
+            affected_service=row["affected_service"],
+            model_used=row["model_used"],
+            generated_at=datetime.fromisoformat(row["generated_at"]),
+        )
+
     def to_dict(self) -> dict:
         return {
             "id": self.id,

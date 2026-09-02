@@ -1,5 +1,6 @@
 """Data models for the triage layer."""
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -16,6 +17,20 @@ class Cluster:
     affected_services: set[str]
     entry_ids: list[str] = field(default_factory=list)
     risk_score: float = 0.0
+
+    @classmethod
+    def from_row(cls, row: dict) -> "Cluster":
+        return cls(
+            id=row["id"],
+            template=row["template"],
+            template_tokens=json.loads(row["template_tokens"]),
+            first_seen=datetime.fromisoformat(row["first_seen"]),
+            last_seen=datetime.fromisoformat(row["last_seen"]),
+            count=row["count"],
+            max_severity=row["max_severity"],
+            affected_services=set(json.loads(row["affected_services"])),
+            risk_score=row["risk_score"] or 0.0,
+        )
 
     def to_dict(self) -> dict:
         return {

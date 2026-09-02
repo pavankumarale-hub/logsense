@@ -1,7 +1,5 @@
 """POST /api/v1/rca — RCA generation and incident drafting endpoints."""
 
-import json
-from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query
@@ -36,17 +34,7 @@ async def generate_rca(cluster_id: str, force: bool = Query(default=False)):
     samples = await repo.get_cluster_log_samples(cluster_id, limit=5)
     log_samples = [s["message"] for s in samples]
 
-    cluster = Cluster(
-        id=cluster_row["id"],
-        template=cluster_row["template"],
-        template_tokens=json.loads(cluster_row["template_tokens"]),
-        first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
-        last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
-        count=cluster_row["count"],
-        max_severity=cluster_row["max_severity"],
-        affected_services=set(json.loads(cluster_row["affected_services"])),
-        risk_score=cluster_row["risk_score"] or 0.0,
-    )
+    cluster = Cluster.from_row(cluster_row)
 
     generator = RCAGenerator()
     rca = generator.generate(cluster, log_samples)
@@ -78,30 +66,8 @@ async def draft_incident(req: DraftRequest):
     if not cluster_row:
         raise HTTPException(status_code=404, detail="Cluster not found")
 
-    rca = RCAResult(
-        id=rca_row["id"],
-        cluster_id=rca_row["cluster_id"],
-        title=rca_row["title"],
-        summary=rca_row["summary"],
-        root_cause_hypothesis=rca_row["root_cause_hypothesis"],
-        confidence=rca_row["confidence"],  # type: ignore[arg-type]
-        confidence_score=rca_row["confidence_score"],
-        suggested_action=rca_row["suggested_action"],
-        affected_service=rca_row["affected_service"],
-        model_used=rca_row["model_used"],
-        generated_at=datetime.fromisoformat(rca_row["generated_at"]),
-    )
-    cluster = Cluster(
-        id=cluster_row["id"],
-        template=cluster_row["template"],
-        template_tokens=json.loads(cluster_row["template_tokens"]),
-        first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
-        last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
-        count=cluster_row["count"],
-        max_severity=cluster_row["max_severity"],
-        affected_services=set(json.loads(cluster_row["affected_services"])),
-        risk_score=cluster_row["risk_score"] or 0.0,
-    )
+    rca = RCAResult.from_row(rca_row)
+    cluster = Cluster.from_row(cluster_row)
 
     if req.platform == "jira":
         draft = JiraPayloadBuilder().build(rca, cluster)
