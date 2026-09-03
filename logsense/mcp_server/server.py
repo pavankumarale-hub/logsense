@@ -29,10 +29,7 @@ Claude Desktop config (~/.claude_desktop_config.json):
 See docs/mcp-connection-guide.md for full setup instructions.
 """
 
-import asyncio
 import json
-import sys
-from datetime import datetime, timezone
 
 from mcp.server.fastmcp import FastMCP
 
@@ -72,8 +69,7 @@ async def ingest_logs(content: str, source: str = "mcp-client") -> str:
     await db.initialize()
     repo = LogRepository(db)
 
-    entries = parse_log_lines(content, source=source)
-    entries = normalize(entries)
+    entries = normalize(parse_log_lines(content, source=source))
 
     if not entries:
         return json.dumps({"status": "ok", "entries_parsed": 0, "message": "No parseable log lines found."})
@@ -148,17 +144,7 @@ async def get_rca_for_cluster(cluster_id: str) -> str:
     samples = await repo.get_cluster_log_samples(cluster_id, limit=5)
     log_samples = [s["message"] for s in samples]
 
-    cluster = Cluster(
-        id=cluster_row["id"],
-        template=cluster_row["template"],
-        template_tokens=json.loads(cluster_row["template_tokens"]),
-        first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
-        last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
-        count=cluster_row["count"],
-        max_severity=cluster_row["max_severity"],
-        affected_services=set(json.loads(cluster_row["affected_services"])),
-        risk_score=cluster_row["risk_score"] or 0.0,
-    )
+    cluster = Cluster.from_row(cluster_row)
 
     generator = RCAGenerator()
     rca = generator.generate(cluster, log_samples)
@@ -201,31 +187,8 @@ async def draft_incident_report(
     if not cluster_row:
         return json.dumps({"error": f"Cluster {cluster_id} not found."})
 
-    rca = RCAResult(
-        id=rca_row["id"],
-        cluster_id=rca_row["cluster_id"],
-        title=rca_row["title"],
-        summary=rca_row["summary"],
-        root_cause_hypothesis=rca_row["root_cause_hypothesis"],
-        confidence=rca_row["confidence"],  # type: ignore[arg-type]
-        confidence_score=rca_row["confidence_score"],
-        suggested_action=rca_row["suggested_action"],
-        affected_service=rca_row["affected_service"],
-        model_used=rca_row["model_used"],
-        generated_at=datetime.fromisoformat(rca_row["generated_at"]),
-    )
-
-    cluster = Cluster(
-        id=cluster_row["id"],
-        template=cluster_row["template"],
-        template_tokens=json.loads(cluster_row["template_tokens"]),
-        first_seen=datetime.fromisoformat(cluster_row["first_seen"]),
-        last_seen=datetime.fromisoformat(cluster_row["last_seen"]),
-        count=cluster_row["count"],
-        max_severity=cluster_row["max_severity"],
-        affected_services=set(json.loads(cluster_row["affected_services"])),
-        risk_score=cluster_row["risk_score"] or 0.0,
-    )
+    rca = RCAResult.from_row(rca_row)
+    cluster = Cluster.from_row(cluster_row)
 
     if platform == "jira":
         draft = JiraPayloadBuilder().build(rca, cluster)
