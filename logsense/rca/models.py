@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Literal
+from typing import Literal, cast
 
 ConfidenceLevel = Literal["low", "medium", "high"]
 
@@ -29,7 +29,7 @@ class RCAResult:
             title=row["title"],
             summary=row["summary"],
             root_cause_hypothesis=row["root_cause_hypothesis"],
-            confidence=row["confidence"],  # type: ignore[arg-type]
+            confidence=cast(ConfidenceLevel, row["confidence"]),
             confidence_score=row["confidence_score"],
             suggested_action=row["suggested_action"],
             affected_service=row["affected_service"],

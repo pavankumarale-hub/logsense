@@ -8,6 +8,7 @@ import argparse
 import random
 import uuid
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 SERVICES = [
     "payment-service", "order-service", "auth-service",
@@ -65,8 +66,7 @@ def main():
     args = parser.parse_args()
 
     lines = generate(args.count)
-    with open(args.output, "w") as f:
-        f.write("\n".join(lines) + "\n")
+    Path(args.output).write_text("\n".join(lines) + "\n")
     print(f"Generated {len(lines)} log lines → {args.output}")
 
 

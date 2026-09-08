@@ -8,12 +8,13 @@ in the prompts module; retry/error-handling lives here.
 import json
 import uuid
 from datetime import datetime, timezone
+from typing import cast
 
 import anthropic
 
 from logsense.config import get_settings
 from logsense.triage.models import Cluster
-from .models import RCAResult
+from .models import ConfidenceLevel, RCAResult
 from .prompts import SYSTEM_PROMPT, build_user_prompt
 
 
@@ -103,7 +104,7 @@ class RCAGenerator:
             title=str(data.get("title", "Untitled Incident"))[:80],
             summary=str(data.get("summary", "")),
             root_cause_hypothesis=str(data.get("root_cause_hypothesis", "")),
-            confidence=raw_confidence,  # type: ignore[arg-type]
+            confidence=cast(ConfidenceLevel, raw_confidence),
             confidence_score=confidence_score,
             suggested_action=str(data.get("suggested_action", "")),
             affected_service=str(data.get("affected_service", "unknown")),
