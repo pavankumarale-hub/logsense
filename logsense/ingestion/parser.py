@@ -72,6 +72,8 @@ _MONTH_MAP = {
     "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
 }
 
+_LEVEL_MAP: dict[str, str] = {"WARNING": "WARN", "FATAL": "CRITICAL"}
+
 
 def _parse_datetime(date_str: str, time_str: str) -> datetime:
     combined = f"{date_str} {time_str}".replace("/", "-").replace(",", ".")
@@ -87,9 +89,8 @@ def _parse_datetime(date_str: str, time_str: str) -> datetime:
 
 
 def _normalize_level(raw: str) -> str:
-    mapping = {"WARNING": "WARN", "FATAL": "CRITICAL"}
     upper = raw.upper()
-    return mapping.get(upper, upper)
+    return _LEVEL_MAP.get(upper, upper)
 
 
 def _extract_trace_info(text: str) -> tuple[str | None, str | None]:
@@ -235,7 +236,6 @@ def _is_stack_trace_continuation(line: str) -> bool:
         stripped.startswith("at ")
         or stripped.startswith("Caused by:")
         or stripped.startswith("...\t")
-        or (stripped.startswith("\t") and stripped[1:3] in ("at", ".."))
     )
 
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 
-SEVERITY_ORDER = {"DEBUG": 0, "INFO": 1, "WARN": 2, "WARNING": 2, "ERROR": 3, "CRITICAL": 4, "FATAL": 4}
+SEVERITY_ORDER: dict[str, int] = {"DEBUG": 0, "INFO": 1, "WARN": 2, "WARNING": 2, "ERROR": 3, "CRITICAL": 4, "FATAL": 4}
 
 
 @dataclass

@@ -55,7 +55,7 @@ class LogRepository:
         level: str | None = None,
         service: str | None = None,
     ) -> list[dict]:
-        clauses = []
+        clauses: list[str] = []
         params: list[str | int] = []
         if level:
             clauses.append("level = ?")
