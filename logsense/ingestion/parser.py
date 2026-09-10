@@ -13,8 +13,6 @@ import json
 import re
 import uuid
 from datetime import datetime, timezone
-from typing import Iterator
-
 from .models import LogEntry
 
 # ---------------------------------------------------------------------------
@@ -202,10 +200,8 @@ def _try_syslog(line: str, source: str, now: datetime) -> LogEntry | None:
         return None
     month_num = _MONTH_MAP.get(m.group("month"), 1)
     day = int(m.group("day"))
-    time_str = m.group("time")
-    year = now.year
-    date_str = f"{year}-{month_num:02d}-{day:02d}"
-    ts = _parse_datetime(date_str, time_str)
+    date_str = f"{now.year}-{month_num:02d}-{day:02d}"
+    ts = _parse_datetime(date_str, m.group("time"))
     message = m.group("message")
     level_hint = _LEVEL_HINTS.search(message)
     level = _normalize_level(level_hint.group(1)) if level_hint else "INFO"

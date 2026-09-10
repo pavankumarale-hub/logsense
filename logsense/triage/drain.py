@@ -154,7 +154,7 @@ class DrainParser:
 
         # Levels 2..depth-1: prefix walk
         node = count_node
-        for i, tok in enumerate(tokens[: self._depth - 1]):
+        for tok in tokens[: self._depth - 1]:
             key = tok
             if key not in node.children:
                 if len(node.children) >= self._max_children:

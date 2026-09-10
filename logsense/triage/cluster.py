@@ -36,7 +36,7 @@ class ClusterEngine:
             group = self._drain.add_entry(entry)
             cluster_id = self._group_to_cluster.get(group.id)
 
-            if cluster_id and cluster_id in self._clusters:
+            if cluster_id:
                 cluster = self._clusters[cluster_id]
                 # Template may have widened — update it
                 cluster.template = group.template
