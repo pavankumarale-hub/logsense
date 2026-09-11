@@ -71,8 +71,7 @@ class RCAGenerator:
         # inside JSON string values (e.g. suggested_action shell snippets) are
         # preserved.
         if raw_text.startswith("```"):
-            lines = raw_text.splitlines()
-            lines = lines[1:]  # opening fence always present (checked above)
+            lines = raw_text.splitlines()[1:]  # drop the opening fence line
             close_idx = next(
                 (i for i in range(len(lines) - 1, -1, -1) if lines[i].startswith("```")),
                 None,

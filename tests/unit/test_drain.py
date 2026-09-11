@@ -9,17 +9,19 @@ from logsense.ingestion.models import LogEntry
 
 pytestmark = pytest.mark.unit
 
+_FIXED_TS = datetime(2024, 1, 15, 10, 0, 0, tzinfo=timezone.utc)
+
 
 def _make_entry(message: str, service: str = "svc") -> LogEntry:
     return LogEntry(
         id="test-id",
-        timestamp=datetime(2024, 1, 15, 10, 0, 0, tzinfo=timezone.utc),
+        timestamp=_FIXED_TS,
         level="ERROR",
         service=service,
         message=message,
         raw_line=message,
         source="test",
-        ingested_at=datetime(2024, 1, 15, 10, 0, 0, tzinfo=timezone.utc),
+        ingested_at=_FIXED_TS,
     )
 
 
