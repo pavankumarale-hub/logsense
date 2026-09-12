@@ -37,7 +37,7 @@ class RCAResult:
             generated_at=datetime.fromisoformat(row["generated_at"]),
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "cluster_id": self.cluster_id,

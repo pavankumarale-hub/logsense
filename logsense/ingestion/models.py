@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 SEVERITY_ORDER: dict[str, int] = {"DEBUG": 0, "INFO": 1, "WARN": 2, "WARNING": 2, "ERROR": 3, "CRITICAL": 4, "FATAL": 4}
@@ -25,7 +26,7 @@ class LogEntry:
     def severity_rank(self) -> int:
         return SEVERITY_ORDER.get(self.level.upper(), 1)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "timestamp": self.timestamp.isoformat(),

@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime, timezone
+from typing import Any
 
 from logsense.ingestion.models import LogEntry
 from logsense.triage.models import Cluster
@@ -54,7 +55,7 @@ class LogRepository:
         offset: int = 0,
         level: str | None = None,
         service: str | None = None,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         clauses: list[str] = []
         params: list[str | int] = []
         if level:
@@ -182,7 +183,7 @@ class LogRepository:
 
     async def get_clusters(
         self, limit: int = 50, min_risk_score: float = 0.0
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         async with self._db.connection() as conn:
             async with conn.execute(
                 """SELECT * FROM clusters
@@ -194,7 +195,7 @@ class LogRepository:
                 rows = await cur.fetchall()
         return [dict(r) for r in rows]
 
-    async def get_cluster_by_id(self, cluster_id: str) -> dict | None:
+    async def get_cluster_by_id(self, cluster_id: str) -> dict[str, Any] | None:
         async with self._db.connection() as conn:
             async with conn.execute(
                 "SELECT * FROM clusters WHERE id = ?", (cluster_id,)
@@ -204,7 +205,7 @@ class LogRepository:
 
     async def get_cluster_log_samples(
         self, cluster_id: str, limit: int = 5
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         async with self._db.connection() as conn:
             async with conn.execute(
                 """SELECT le.* FROM log_entries le
@@ -245,7 +246,7 @@ class LogRepository:
             )
             await conn.commit()
 
-    async def get_rca_for_cluster(self, cluster_id: str) -> dict | None:
+    async def get_rca_for_cluster(self, cluster_id: str) -> dict[str, Any] | None:
         async with self._db.connection() as conn:
             async with conn.execute(
                 """SELECT * FROM rca_results

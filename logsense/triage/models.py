@@ -33,7 +33,7 @@ class Cluster:
             risk_score=row["risk_score"] or 0.0,
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "template": self.template,

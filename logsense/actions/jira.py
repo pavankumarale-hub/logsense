@@ -9,12 +9,13 @@ exercise (requires Atlassian OAuth or API token configuration).
 """
 
 import uuid
+from typing import Any
 
 from logsense.rca.models import RCAResult
 from logsense.triage.models import Cluster
 from .models import IncidentDraft
 
-def _para(text: str) -> dict:
+def _para(text: str) -> dict[str, Any]:
     return {"type": "paragraph", "content": [{"type": "text", "text": text}]}
 
 

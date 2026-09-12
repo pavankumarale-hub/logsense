@@ -19,7 +19,7 @@ class IncidentDraft:
     external_url: str | None = None
     created_at: datetime = field(default_factory=_now_utc)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "rca_id": self.rca_id,
