@@ -33,8 +33,5 @@ def _normalize_level(level: str) -> str:
 
 
 def _normalize_service(service: str) -> str:
-    s = service.strip().lower()
-    s = s.replace("_", "-")
-    if not s:
-        return "unknown"
-    return s
+    s = service.strip().lower().replace("_", "-")
+    return s or "unknown"

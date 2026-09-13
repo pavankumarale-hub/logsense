@@ -9,6 +9,7 @@ spam a real GitHub tracker.
 """
 
 import uuid
+from typing import Any
 
 import httpx
 
@@ -105,7 +106,7 @@ class GitHubIssueDrafter:
             external_url=external_url,
         )
 
-    def _create_issue(self, payload: dict) -> str:
+    def _create_issue(self, payload: dict[str, Any]) -> str:
         if not self._token or not self._repo:
             raise ValueError(
                 "GITHUB_TOKEN and GITHUB_REPO must be set to create real issues"

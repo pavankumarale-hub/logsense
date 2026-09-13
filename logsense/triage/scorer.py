@@ -40,6 +40,6 @@ def score_cluster(cluster: "Cluster", now: datetime) -> float:
     age_hours = max((now - cluster.last_seen).total_seconds() / 3600, 0.0)
     recency_score = math.exp(-_LN2 * age_hours / _HALF_LIFE_HOURS)
 
-    sev_score = _SEVERITY_SCORE.get(cluster.max_severity.upper(), 0.5)
+    sev_score = _SEVERITY_SCORE.get(cluster.max_severity, 0.5)
 
     return (freq_score * 0.4) + (recency_score * 0.3) + (sev_score * 0.3)
