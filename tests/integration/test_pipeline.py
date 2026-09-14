@@ -32,6 +32,7 @@ def _load_cassette() -> MagicMock:
     cassette = json.loads(CASSETTE_PATH.read_text())
 
     content_block = MagicMock()
+    content_block.type = "text"
     content_block.text = cassette["content"][0]["text"]
 
     response = MagicMock()
@@ -128,7 +129,7 @@ class TestRCAPipeline:
         raw_json = json.loads(CASSETTE_PATH.read_text())["content"][0]["text"]
 
         fenced_response = MagicMock()
-        fenced_response.content = [MagicMock(text=f"```json\n{raw_json}\n```")]
+        fenced_response.content = [MagicMock(type="text", text=f"```json\n{raw_json}\n```")]
         mock_client.messages.create.return_value = fenced_response
 
         cluster = Cluster(
@@ -151,7 +152,7 @@ class TestRCAPipeline:
     def test_rca_validates_confidence_score_bounds(self, MockAnthropic):
         mock_client = MockAnthropic.return_value
         bad_response = MagicMock()
-        bad_response.content = [MagicMock(text=json.dumps({
+        bad_response.content = [MagicMock(type="text", text=json.dumps({
             "title": "Test",
             "summary": "Test summary",
             "root_cause_hypothesis": "Test hypothesis",

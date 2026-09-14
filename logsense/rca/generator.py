@@ -56,9 +56,9 @@ class RCAGenerator:
         if not response.content:
             raise ValueError("LLM returned an empty content list — no text to parse")
         first_block = response.content[0]
-        if not hasattr(first_block, "text"):
+        if first_block.type != "text":
             raise ValueError(
-                f"LLM returned a non-text content block: {type(first_block).__name__}"
+                f"LLM returned a non-text content block: {first_block.type!r}"
             )
         raw_text = first_block.text.strip()
         return self._parse_response(raw_text, cluster.id)

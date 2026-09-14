@@ -24,7 +24,7 @@ class LogEntry:
 
     @property
     def severity_rank(self) -> int:
-        return SEVERITY_ORDER.get(self.level.upper(), 1)
+        return SEVERITY_ORDER.get(self.level, 1)
 
     def to_dict(self) -> dict[str, Any]:
         return {
