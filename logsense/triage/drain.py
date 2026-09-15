@@ -155,12 +155,8 @@ class DrainParser:
         # Levels 2..depth-1: prefix walk
         node = count_node
         for tok in tokens[: self._depth - 1]:
-            key = tok
-            if key not in node.children:
-                if len(node.children) >= self._max_children:
-                    key = _WILDCARD
-                if key not in node.children:
-                    node.children[key] = PrefixNode()
+            key = tok if (tok in node.children or len(node.children) < self._max_children) else _WILDCARD
+            node.children.setdefault(key, PrefixNode())
             node = node.children[key]
 
         # Leaf: match or create
@@ -183,8 +179,7 @@ class DrainParser:
             old_key = best_group.template
             best_group.template_tokens = merged
             # Re-index under new template key
-            if old_key in self._template_index:
-                del self._template_index[old_key]
+            self._template_index.pop(old_key, None)
             self._template_index[best_group.template] = best_group
             return best_group
 
