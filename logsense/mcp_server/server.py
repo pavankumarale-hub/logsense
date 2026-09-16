@@ -30,10 +30,10 @@ See docs/mcp-connection-guide.md for full setup instructions.
 """
 
 import json
+from typing import Literal
 
 from mcp.server.fastmcp import FastMCP
 
-from logsense.config import get_settings
 from logsense.ingestion import parse_log_lines, normalize
 from logsense.storage.db import get_db
 from logsense.storage.repository import LogRepository
@@ -161,7 +161,7 @@ async def get_rca_for_cluster(cluster_id: str) -> str:
 @mcp.tool()
 async def draft_incident_report(
     cluster_id: str,
-    platform: str = "github",
+    platform: Literal["github", "jira"] = "github",
     dry_run: bool = True,
 ) -> str:
     """Draft (or create) a GitHub issue or Jira ticket from an RCA result.
