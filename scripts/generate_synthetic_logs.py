@@ -33,7 +33,7 @@ def _fill(template: str) -> str:
     return (
         template
         .replace("{ms}", str(random.randint(28000, 32000)))
-        .replace("{method}", random.choice(["getId", "getName", "getEmail", "getOrder"]) + "()")
+        .replace("{method}", random.choice(["getId()", "getName()", "getEmail()", "getOrder()"]))
         .replace("{var}", random.choice(["customer", "order", "user", "product"]))
         .replace("{ts}", "2024-01-15T09:00:00Z")
         .replace("{user}", f"user-{random.randint(1000, 9999)}")
