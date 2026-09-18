@@ -4,6 +4,7 @@ These tests are purely in-memory — no I/O, no LLM calls.
 """
 
 import json
+from pathlib import Path
 
 import pytest
 from datetime import timezone
@@ -47,9 +48,7 @@ class TestSpringBootCustomFormat:
         assert "OrderService.processOrder" in entries[0].stack_trace
 
     def test_parses_multiple_entries(self):
-        fixture_path = "tests/fixtures/spring_boot_errors.log"
-        with open(fixture_path) as f:
-            content = f.read()
+        content = Path("tests/fixtures/spring_boot_errors.log").read_text()
         entries = parse_log_lines(content)
         assert len(entries) >= 10
         levels = {e.level for e in entries}
@@ -84,8 +83,7 @@ class TestNginxFormat:
         assert "Connection refused" in entries[0].message
 
     def test_parses_nginx_fixture(self):
-        with open("tests/fixtures/nginx_errors.log") as f:
-            content = f.read()
+        content = Path("tests/fixtures/nginx_errors.log").read_text()
         entries = parse_log_lines(content)
         assert len(entries) >= 5
         assert all(e.service == "nginx" for e in entries)
@@ -108,8 +106,7 @@ class TestJsonFormat:
         assert "JWT" in entries[0].message
 
     def test_parses_json_fixture(self):
-        with open("tests/fixtures/mixed_json.log") as f:
-            content = f.read()
+        content = Path("tests/fixtures/mixed_json.log").read_text()
         entries = parse_log_lines(content)
         assert len(entries) == 5
         assert entries[0].level == "ERROR"
