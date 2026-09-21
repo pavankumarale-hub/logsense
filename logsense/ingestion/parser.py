@@ -162,7 +162,7 @@ def _try_spring_boot_custom(line: str, source: str, now: datetime) -> LogEntry |
     ts = _parse_datetime(m.group("date"), m.group("time"))
     message = m.group("message")
     trace_ctx = m.group("trace_ctx") or ""
-    trace_id, corr_id = _extract_trace_info(trace_ctx + " " + message)
+    trace_id, corr_id = _extract_trace_info(f"{trace_ctx} {message}")
     return LogEntry(
         id=str(uuid.uuid4()),
         timestamp=ts,

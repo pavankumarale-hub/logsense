@@ -89,7 +89,7 @@ def rca(cluster_id: str):
 
         cached = await repo.get_rca_for_cluster(cluster_id)
         if cached:
-            click.echo("[cached]\n" + json.dumps(cached, indent=2))
+            click.echo(f"[cached]\n{json.dumps(cached, indent=2)}")
             return
 
         cluster_row = await repo.get_cluster_by_id(cluster_id)
