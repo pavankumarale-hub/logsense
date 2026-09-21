@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Literal
 
 
 def _now_utc() -> datetime:
@@ -13,9 +13,9 @@ def _now_utc() -> datetime:
 class IncidentDraft:
     id: str
     rca_id: str
-    platform: str  # "github" | "jira"
+    platform: Literal["github", "jira"]
     payload: dict[str, Any]
-    status: str = "draft"  # "draft" | "submitted"
+    status: Literal["draft", "submitted"] = "draft"
     external_url: str | None = None
     created_at: datetime = field(default_factory=_now_utc)
 

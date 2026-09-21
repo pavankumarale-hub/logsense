@@ -78,7 +78,7 @@ class TestFrequencyImpact:
         large = _make_cluster(count=1000)
         score_small = score_cluster(small, now)
         score_large = score_cluster(large, now)
-        ratio = score_large / score_small if score_small > 0 else float("inf")
+        ratio = score_large / score_small if score_small > 0 else math.inf
         assert ratio < 10, f"Score ratio {ratio:.1f} too large — frequency should be log-scaled"
 
 
