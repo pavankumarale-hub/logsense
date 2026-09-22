@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 # Preprocessing regexes — applied left-to-right before tokenisation
 # ---------------------------------------------------------------------------
-_PREPROCESS_RULES: list[tuple[re.Pattern, str]] = [
+_PREPROCESS_RULES: list[tuple[re.Pattern[str], str]] = [
     # IPv4 addresses
     (re.compile(r"\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b"), "<*>"),
     # UUIDs
