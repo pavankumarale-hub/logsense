@@ -85,8 +85,7 @@ class RCAGenerator:
         except json.JSONDecodeError as exc:
             raise ValueError(f"LLM returned non-JSON response: {raw_text[:200]}") from exc
 
-        confidence_score = float(data.get("confidence_score", 0.5))
-        confidence_score = max(0.0, min(1.0, confidence_score))
+        confidence_score = max(0.0, min(1.0, float(data.get("confidence_score", 0.5))))
 
         raw_confidence = str(data.get("confidence", "medium")).lower()
         if raw_confidence not in ("low", "medium", "high"):
