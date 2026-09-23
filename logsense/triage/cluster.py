@@ -67,7 +67,7 @@ class ClusterEngine:
         for cluster in self._clusters.values():
             cluster.risk_score = score_cluster(cluster, now)
 
-        return list(self._clusters.values())
+        return self.clusters
 
     @property
     def clusters(self) -> list[Cluster]:
