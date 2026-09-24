@@ -86,6 +86,7 @@ class LogRepository:
         count accumulates; risk_score is recomputed from the cumulative count
         and last_seen so the score always reflects true cluster history.
         """
+        now = datetime.now(timezone.utc)
         async with self._db.connection() as conn:
             async with conn.execute(
                 """INSERT INTO clusters
@@ -137,7 +138,7 @@ class LogRepository:
                     cluster.max_severity,
                     json.dumps(sorted(cluster.affected_services)),
                     0.0,  # placeholder; overwritten by UPDATE below
-                    datetime.now(timezone.utc).isoformat(),
+                    now.isoformat(),
                 ),
             ) as cur:
                 row = await cur.fetchone()
@@ -156,7 +157,7 @@ class LogRepository:
                 max_severity=row["max_severity"],
                 affected_services=cluster.affected_services,
             )
-            risk_score = score_cluster(scoring_cluster, datetime.now(timezone.utc))
+            risk_score = score_cluster(scoring_cluster, now)
             await conn.execute(
                 "UPDATE clusters SET risk_score = ? WHERE id = ?",
                 (risk_score, db_id),
