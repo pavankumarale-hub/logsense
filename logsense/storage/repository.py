@@ -64,9 +64,9 @@ class LogRepository:
         if service:
             clauses.append("service = ?")
             params.append(service.lower())
-        where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
-        sql = f"SELECT * FROM log_entries {where} ORDER BY timestamp DESC LIMIT ? OFFSET ?"
-        params += [limit, offset]
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        sql = f"SELECT * FROM log_entries{where} ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+        params.extend((limit, offset))
         async with self._db.connection() as conn:
             async with conn.execute(sql, params) as cur:
                 rows = await cur.fetchall()
