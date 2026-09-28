@@ -227,12 +227,7 @@ _PARSERS = [
 
 
 def _is_stack_trace_continuation(line: str) -> bool:
-    stripped = line.lstrip()
-    return (
-        stripped.startswith("at ")
-        or stripped.startswith("Caused by:")
-        or stripped.startswith("...\t")
-    )
+    return line.lstrip().startswith(("at ", "Caused by:", "...\t"))
 
 
 def parse_log_lines(content: str, source: str = "manual") -> list[LogEntry]:
