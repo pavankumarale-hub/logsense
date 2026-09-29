@@ -60,10 +60,6 @@ def _preprocess(message: str) -> str:
     return message
 
 
-def _tokenize(message: str) -> list[str]:
-    return message.split()
-
-
 def _seq_similarity(tokens_a: list[str], tokens_b: list[str]) -> float:
     """Weighted similarity between two token sequences.
 
@@ -135,9 +131,7 @@ class DrainParser:
 
     def add_entry(self, entry: "LogEntry") -> LogGroup:
         """Process one log entry and return its LogGroup."""
-        preprocessed = _preprocess(entry.message)
-        tokens = _tokenize(preprocessed)
-        return self._route(tokens)
+        return self._route(_preprocess(entry.message).split())
 
     @property
     def groups(self) -> list[LogGroup]:
