@@ -28,35 +28,27 @@ def _make_entry(message: str, service: str = "svc") -> LogEntry:
 class TestTemplateExtraction:
     def test_identical_messages_produce_one_group(self):
         parser = DrainParser()
-        e1 = _make_entry("Connection refused to database")
-        e2 = _make_entry("Connection refused to database")
-        g1 = parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        g1 = parser.add_entry(_make_entry("Connection refused to database"))
+        g2 = parser.add_entry(_make_entry("Connection refused to database"))
         assert g1.id == g2.id
 
     def test_numeric_variables_become_wildcard(self):
         parser = DrainParser()
-        e1 = _make_entry("Connection timeout after 30000ms")
-        e2 = _make_entry("Connection timeout after 29998ms")
-        g1 = parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        g1 = parser.add_entry(_make_entry("Connection timeout after 30000ms"))
+        g2 = parser.add_entry(_make_entry("Connection timeout after 29998ms"))
         assert g1.id == g2.id
         assert "<*>" in g1.template
 
     def test_uuid_variables_become_wildcard(self):
         parser = DrainParser()
-        e1 = _make_entry("Session a1b2c3d4-e5f6-7890-abcd-ef1234567890 expired")
-        e2 = _make_entry("Session b2c3d4e5-f6a7-8901-bcde-fa2345678901 expired")
-        g1 = parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        g1 = parser.add_entry(_make_entry("Session a1b2c3d4-e5f6-7890-abcd-ef1234567890 expired"))
+        g2 = parser.add_entry(_make_entry("Session b2c3d4e5-f6a7-8901-bcde-fa2345678901 expired"))
         assert g1.id == g2.id
 
     def test_distinct_error_types_produce_different_groups(self):
         parser = DrainParser()
-        e1 = _make_entry("Database connection timeout after 30000ms")
-        e2 = _make_entry("JWT validation failed for user 12345")
-        g1 = parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        g1 = parser.add_entry(_make_entry("Database connection timeout after 30000ms"))
+        g2 = parser.add_entry(_make_entry("JWT validation failed for user 12345"))
         assert g1.id != g2.id
 
     def test_groups_property_returns_all_groups(self):
@@ -72,36 +64,28 @@ class TestTemplateExtraction:
 
     def test_template_is_stable_after_merging(self):
         parser = DrainParser()
-        e1 = _make_entry("Error processing order 111 for customer alice")
-        e2 = _make_entry("Error processing order 222 for customer bob")
-        parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        parser.add_entry(_make_entry("Error processing order 111 for customer alice"))
+        g2 = parser.add_entry(_make_entry("Error processing order 222 for customer bob"))
         assert "Error processing order" in g2.template
         assert "<*>" in g2.template
 
     def test_ip_addresses_become_wildcard(self):
         parser = DrainParser()
-        e1 = _make_entry("Connection from 192.168.1.100 rejected")
-        e2 = _make_entry("Connection from 10.0.0.50 rejected")
-        g1 = parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        g1 = parser.add_entry(_make_entry("Connection from 192.168.1.100 rejected"))
+        g2 = parser.add_entry(_make_entry("Connection from 10.0.0.50 rejected"))
         assert g1.id == g2.id
 
     def test_different_token_count_produces_different_group(self):
         parser = DrainParser()
-        e1 = _make_entry("short error")
-        e2 = _make_entry("this is a completely different and much longer error message")
-        g1 = parser.add_entry(e1)
-        g2 = parser.add_entry(e2)
+        g1 = parser.add_entry(_make_entry("short error"))
+        g2 = parser.add_entry(_make_entry("this is a completely different and much longer error message"))
         assert g1.id != g2.id
 
     def test_custom_sim_threshold(self):
         # With very high threshold, even slightly different messages stay separate
         strict_parser = DrainParser(sim_threshold=0.99)
-        e1 = _make_entry("Error reading file config.yaml at line 42")
-        e2 = _make_entry("Error reading file settings.yaml at line 99")
-        g1 = strict_parser.add_entry(e1)
-        g2 = strict_parser.add_entry(e2)
+        g1 = strict_parser.add_entry(_make_entry("Error reading file config.yaml at line 42"))
+        g2 = strict_parser.add_entry(_make_entry("Error reading file settings.yaml at line 99"))
         # After preprocessing (numbers → <*>), tokens still differ at "config.yaml" vs "settings.yaml"
         # so they should stay in separate groups with strict threshold
         assert g1.id != g2.id
