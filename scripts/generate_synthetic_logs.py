@@ -52,10 +52,10 @@ def generate(count: int) -> list[str]:
         ts += timedelta(milliseconds=random.randint(50, 500))
         service = random.choice(SERVICES)
         level, tmpl = random.choice(ERROR_TEMPLATES)
-        message = _fill(tmpl)
-        trace = str(uuid.uuid4())[:8]
-        line = f"{ts.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} {level:5s} [{service}] [trace={trace}] - {message}"
-        lines.append(line)
+        lines.append(
+            f"{ts.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]} {level:5s} [{service}]"
+            f" [trace={uuid.uuid4().hex[:8]}] - {_fill(tmpl)}"
+        )
     return lines
 
 
