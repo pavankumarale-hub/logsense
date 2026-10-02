@@ -34,7 +34,7 @@ class Settings:
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
 
     # Test flags
-    live_tests: bool = os.getenv("LOGSENSE_LIVE_TESTS", "").lower() == "1"
+    live_tests: bool = os.getenv("LOGSENSE_LIVE_TESTS", "") == "1"
 
 
 @lru_cache(maxsize=1)

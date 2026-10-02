@@ -94,7 +94,7 @@ def _normalize_level(raw: str) -> str:
 def _extract_trace_info(text: str) -> tuple[str | None, str | None]:
     tm = _TRACE_CTX.search(text)
     cm = _CORR_CTX.search(text)
-    return (tm.group(1) if tm else None, cm.group(1) if cm else None)
+    return tm.group(1) if tm else None, cm.group(1) if cm else None
 
 
 def _try_json(line: str, source: str, now: datetime) -> LogEntry | None:
@@ -199,8 +199,7 @@ def _try_syslog(line: str, source: str, now: datetime) -> LogEntry | None:
     if not m:
         return None
     month_num = _MONTH_MAP.get(m.group("month"), 1)
-    day = int(m.group("day"))
-    date_str = f"{now.year}-{month_num:02d}-{day:02d}"
+    date_str = f"{now.year}-{month_num:02d}-{int(m.group('day')):02d}"
     ts = _parse_datetime(date_str, m.group("time"))
     message = m.group("message")
     level_hint = _LEVEL_HINTS.search(message)
