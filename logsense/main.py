@@ -4,6 +4,7 @@ import asyncio
 import json
 import sys
 from pathlib import Path
+from typing import Literal
 
 import click
 
@@ -114,7 +115,7 @@ def rca(cluster_id: str):
 @click.argument("cluster_id")
 @click.option("--platform", default="github", type=click.Choice(["github", "jira"]))
 @click.option("--no-dry-run", is_flag=True, default=False, help="Actually create the issue")
-def draft(cluster_id: str, platform: str, no_dry_run: bool):
+def draft(cluster_id: str, platform: Literal["github", "jira"], no_dry_run: bool):
     """Draft an incident report for a cluster."""
 
     async def _run():
@@ -135,11 +136,10 @@ def draft(cluster_id: str, platform: str, no_dry_run: bool):
         rca_obj = RCAResult.from_row(rca_row)
         cluster_obj = Cluster.from_row(cluster_row)
 
-        dry_run = not no_dry_run
         if platform == "jira":
             d = JiraPayloadBuilder().build(rca_obj, cluster_obj)
         else:
-            d = GitHubIssueDrafter(dry_run=dry_run).draft(rca_obj, cluster_obj)
+            d = GitHubIssueDrafter(dry_run=not no_dry_run).draft(rca_obj, cluster_obj)
 
         await repo.insert_incident_draft(d)
         click.echo(json.dumps(d.to_dict(), indent=2))
