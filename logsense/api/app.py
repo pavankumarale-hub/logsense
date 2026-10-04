@@ -39,7 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(rca_router.router, prefix="/api/v1/rca", tags=["RCA"])
 
     @app.get("/health")
-    async def health():
+    def health():
         return {"status": "ok", "service": "logsense"}
 
     return app
