@@ -8,8 +8,6 @@ abstracts the difference. See docs/adr/0001-clustering-approach.md for the
 storage tradeoff discussion.
 """
 
-import asyncio
-import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncIterator
