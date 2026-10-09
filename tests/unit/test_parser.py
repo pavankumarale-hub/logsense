@@ -15,6 +15,8 @@ from logsense.ingestion.normalizer import normalize
 
 pytestmark = pytest.mark.unit
 
+FIXTURE_DIR = Path(__file__).parent.parent / "fixtures"
+
 
 class TestSpringBootCustomFormat:
     def test_parses_error_line(self):
@@ -48,7 +50,7 @@ class TestSpringBootCustomFormat:
         assert "OrderService.processOrder" in entries[0].stack_trace
 
     def test_parses_multiple_entries(self):
-        content = Path("tests/fixtures/spring_boot_errors.log").read_text()
+        content = (FIXTURE_DIR / "spring_boot_errors.log").read_text()
         entries = parse_log_lines(content)
         assert len(entries) >= 10
         levels = {e.level for e in entries}
@@ -83,7 +85,7 @@ class TestNginxFormat:
         assert "Connection refused" in entries[0].message
 
     def test_parses_nginx_fixture(self):
-        content = Path("tests/fixtures/nginx_errors.log").read_text()
+        content = (FIXTURE_DIR / "nginx_errors.log").read_text()
         entries = parse_log_lines(content)
         assert len(entries) >= 5
         assert all(e.service == "nginx" for e in entries)
@@ -106,7 +108,7 @@ class TestJsonFormat:
         assert "JWT" in entries[0].message
 
     def test_parses_json_fixture(self):
-        content = Path("tests/fixtures/mixed_json.log").read_text()
+        content = (FIXTURE_DIR / "mixed_json.log").read_text()
         entries = parse_log_lines(content)
         assert len(entries) == 5
         assert entries[0].level == "ERROR"
