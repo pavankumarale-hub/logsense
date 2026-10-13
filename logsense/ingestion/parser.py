@@ -107,7 +107,7 @@ def _try_json(line: str, source: str, now: datetime) -> LogEntry | None:
 
     ts_raw = data.get("timestamp") or data.get("time") or data.get("@timestamp")
     try:
-        ts = datetime.fromisoformat(str(ts_raw).replace("Z", "+00:00")) if ts_raw else now
+        ts = datetime.fromisoformat(str(ts_raw)) if ts_raw else now
     except ValueError:
         ts = now
 
