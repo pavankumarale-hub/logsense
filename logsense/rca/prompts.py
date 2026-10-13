@@ -9,6 +9,8 @@ Design notes (see docs/adr/0002-llm-prompt-design-and-confidence-scoring.md):
   anchors rather than letting it self-anchor arbitrarily.
 """
 
+from collections.abc import Iterable
+
 SYSTEM_PROMPT = """\
 You are an expert Site Reliability Engineer performing root cause analysis on \
 production application logs. Your job is to reason about error patterns, \
@@ -56,7 +58,7 @@ def build_user_prompt(
     count: int,
     first_seen: str,
     last_seen: str,
-    services: list[str],
+    services: Iterable[str],
     severity: str,
     log_samples: list[str],
 ) -> str:

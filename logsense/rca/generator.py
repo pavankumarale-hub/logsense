@@ -41,7 +41,7 @@ class RCAGenerator:
             count=cluster.count,
             first_seen=cluster.first_seen.isoformat(),
             last_seen=cluster.last_seen.isoformat(),
-            services=list(cluster.affected_services),
+            services=cluster.affected_services,
             severity=cluster.max_severity,
             log_samples=log_samples,
         )
