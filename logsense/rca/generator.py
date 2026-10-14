@@ -73,7 +73,7 @@ class RCAGenerator:
         if raw_text.startswith("```"):
             lines = raw_text.splitlines()[1:]  # drop the opening fence line
             close_idx = next(
-                (i for i in range(len(lines) - 1, -1, -1) if lines[i].startswith("```")),
+                (i for i in reversed(range(len(lines))) if lines[i].startswith("```")),
                 None,
             )
             if close_idx is not None:
