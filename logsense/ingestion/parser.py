@@ -12,6 +12,7 @@ Each format is tried in order; the first match wins.
 import json
 import re
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from .models import LogEntry
 
@@ -216,7 +217,7 @@ def _try_syslog(line: str, source: str, now: datetime) -> LogEntry | None:
     )
 
 
-_PARSERS = [
+_PARSERS: list[Callable[[str, str, datetime], LogEntry | None]] = [
     _try_json,
     _try_spring_boot_default,
     _try_spring_boot_custom,
