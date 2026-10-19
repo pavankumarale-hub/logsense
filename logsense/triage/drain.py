@@ -170,10 +170,8 @@ class DrainParser:
 
         if best_group is not None and best_sim >= self._sim_threshold:
             merged = _merge_templates(best_group.template_tokens, tokens)
-            old_key = best_group.template
+            self._template_index.pop(best_group.template, None)
             best_group.template_tokens = merged
-            # Re-index under new template key
-            self._template_index.pop(old_key, None)
             self._template_index[best_group.template] = best_group
             return best_group
 
