@@ -90,19 +90,14 @@ class GitHubIssueDrafter:
             "labels": labels,
         }
 
-        external_url: str | None = None
-        status = "draft"
-
-        if not self._dry_run:
-            external_url = self._create_issue(payload)
-            status = "submitted"
+        external_url = self._create_issue(payload) if not self._dry_run else None
 
         return IncidentDraft(
             id=str(uuid.uuid4()),
             rca_id=rca.id,
             platform="github",
             payload=payload,
-            status=status,
+            status="submitted" if external_url else "draft",
             external_url=external_url,
         )
 
