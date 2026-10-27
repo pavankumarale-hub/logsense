@@ -175,7 +175,7 @@ class DrainParser:
             self._template_index[best_group.template] = best_group
             return best_group
 
-        new_group = LogGroup(id=str(uuid.uuid4()), template_tokens=list(tokens))
+        new_group = LogGroup(id=str(uuid.uuid4()), template_tokens=tokens)
         leaf.log_groups.append(new_group)
         self._template_index[new_group.template] = new_group
         return new_group

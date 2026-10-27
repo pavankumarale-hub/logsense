@@ -40,7 +40,7 @@ class ClusterEngine:
                 cluster = self._clusters[cluster_id]
                 # Template may have widened — update it
                 cluster.template = group.template
-                cluster.template_tokens = list(group.template_tokens)
+                cluster.template_tokens = group.template_tokens
                 cluster.count += 1
                 cluster.last_seen = max(cluster.last_seen, entry.timestamp)
                 cluster.first_seen = min(cluster.first_seen, entry.timestamp)
