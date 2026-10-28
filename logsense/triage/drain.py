@@ -22,8 +22,6 @@ Why Drain over embedding-based clustering for v1?
 See docs/adr/0001-clustering-approach.md for the full tradeoff analysis.
 """
 
-from __future__ import annotations
-
 import re
 import uuid
 from dataclasses import dataclass, field
