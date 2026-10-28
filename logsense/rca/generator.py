@@ -8,7 +8,6 @@ in the prompts module; retry/error-handling lives here.
 import json
 import uuid
 from datetime import datetime, timezone
-from typing import cast
 
 import anthropic
 
@@ -87,7 +86,7 @@ class RCAGenerator:
 
         confidence_score = max(0.0, min(1.0, float(data.get("confidence_score", 0.5))))
 
-        raw_confidence = str(data.get("confidence", "medium")).lower()
+        raw_confidence: ConfidenceLevel = str(data.get("confidence", "medium")).lower()  # type: ignore[assignment]
         if raw_confidence not in ("low", "medium", "high"):
             if confidence_score >= 0.7:
                 raw_confidence = "high"
@@ -102,7 +101,7 @@ class RCAGenerator:
             title=str(data.get("title", "Untitled Incident"))[:80],
             summary=str(data.get("summary", "")),
             root_cause_hypothesis=str(data.get("root_cause_hypothesis", "")),
-            confidence=cast(ConfidenceLevel, raw_confidence),
+            confidence=raw_confidence,
             confidence_score=confidence_score,
             suggested_action=str(data.get("suggested_action", "")),
             affected_service=str(data.get("affected_service", "unknown")),
