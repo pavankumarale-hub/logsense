@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
 ConfidenceLevel = Literal["low", "medium", "high"]
 
@@ -23,13 +23,14 @@ class RCAResult:
 
     @classmethod
     def from_row(cls, row: dict[str, Any]) -> "RCAResult":
+        confidence: ConfidenceLevel = row["confidence"]  # type: ignore[assignment]
         return cls(
             id=row["id"],
             cluster_id=row["cluster_id"],
             title=row["title"],
             summary=row["summary"],
             root_cause_hypothesis=row["root_cause_hypothesis"],
-            confidence=cast(ConfidenceLevel, row["confidence"]),
+            confidence=confidence,
             confidence_score=row["confidence_score"],
             suggested_action=row["suggested_action"],
             affected_service=row["affected_service"],
