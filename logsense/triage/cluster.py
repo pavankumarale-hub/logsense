@@ -1,7 +1,7 @@
 """Cluster engine: wraps Drain and maps groups to Cluster objects."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from logsense.config import get_settings
 from logsense.ingestion.models import LogEntry, SEVERITY_ORDER
@@ -63,7 +63,7 @@ class ClusterEngine:
                 self._clusters[cluster.id] = cluster
                 self._group_to_cluster[group.id] = cluster.id
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         for cluster in self._clusters.values():
             cluster.risk_score = score_cluster(cluster, now)
 
