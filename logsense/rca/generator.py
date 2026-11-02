@@ -7,7 +7,7 @@ in the prompts module; retry/error-handling lives here.
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import anthropic
 
@@ -106,5 +106,5 @@ class RCAGenerator:
             suggested_action=str(data.get("suggested_action", "")),
             affected_service=str(data.get("affected_service", "unknown")),
             model_used=self._model,
-            generated_at=datetime.now(timezone.utc),
+            generated_at=datetime.now(UTC),
         )

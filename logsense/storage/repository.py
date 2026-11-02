@@ -1,7 +1,7 @@
 """Data access layer — all SQL lives here, nowhere else."""
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from logsense.ingestion.models import LogEntry
@@ -86,7 +86,7 @@ class LogRepository:
         count accumulates; risk_score is recomputed from the cumulative count
         and last_seen so the score always reflects true cluster history.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         async with self._db.connection() as conn:
             async with conn.execute(
                 """INSERT INTO clusters
