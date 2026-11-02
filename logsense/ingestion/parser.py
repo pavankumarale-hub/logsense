@@ -13,7 +13,7 @@ import json
 import re
 import uuid
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from .models import LogEntry
 
 # ---------------------------------------------------------------------------
@@ -81,10 +81,10 @@ def _parse_datetime(date_str: str, time_str: str) -> datetime:
         "%Y-%m-%d %H:%M:%S",
     ):
         try:
-            return datetime.strptime(combined, fmt).replace(tzinfo=timezone.utc)
+            return datetime.strptime(combined, fmt).replace(tzinfo=UTC)
         except ValueError:
             pass
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _normalize_level(raw: str) -> str:
@@ -236,7 +236,7 @@ def parse_log_lines(content: str, source: str = "manual") -> list[LogEntry]:
     Stack traces that follow a parsed entry are attached to that entry rather
     than emitted as separate entries.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     lines = content.splitlines()
     entries: list[LogEntry] = []
     stack_buf: list[str] = []
