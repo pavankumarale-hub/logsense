@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 import pytest
-from datetime import timezone
+from datetime import UTC
 
 from logsense.ingestion.parser import parse_log_lines
 from logsense.ingestion.normalizer import normalize
@@ -29,7 +29,7 @@ class TestSpringBootCustomFormat:
         assert "DB timeout" in e.message
         assert e.trace_id == "abc123"
         assert e.timestamp.year == 2024
-        assert e.timestamp.tzinfo == timezone.utc
+        assert e.timestamp.tzinfo == UTC
 
     def test_parses_warn_line(self):
         line = "2024-01-15 10:23:46.001 WARN  [inventory-service] - Circuit breaker OPEN"

@@ -1,7 +1,7 @@
 """Unit tests for the Drain log clustering algorithm."""
 
 import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from logsense.triage.drain import DrainParser
 from logsense.ingestion.models import LogEntry
@@ -9,7 +9,7 @@ from logsense.ingestion.models import LogEntry
 
 pytestmark = pytest.mark.unit
 
-_FIXED_TS = datetime(2024, 1, 15, 10, 0, 0, tzinfo=timezone.utc)
+_FIXED_TS = datetime(2024, 1, 15, 10, 0, 0, tzinfo=UTC)
 
 
 def _make_entry(message: str, service: str = "svc") -> LogEntry:

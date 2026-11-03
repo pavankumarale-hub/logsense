@@ -11,7 +11,7 @@ captured from the Anthropic API.
 
 import json
 import pytest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -102,8 +102,8 @@ class TestRCAPipeline:
             id="cluster-001",
             template="Database connection timeout after <*>ms Unable to acquire JDBC Connection",
             template_tokens=["Database", "connection", "timeout", "after", "<*>ms", "Unable", "to", "acquire", "JDBC", "Connection"],
-            first_seen=datetime(2024, 1, 15, 10, 23, 45, tzinfo=timezone.utc),
-            last_seen=datetime(2024, 1, 15, 10, 24, 5, tzinfo=timezone.utc),
+            first_seen=datetime(2024, 1, 15, 10, 23, 45, tzinfo=UTC),
+            last_seen=datetime(2024, 1, 15, 10, 24, 5, tzinfo=UTC),
             count=8,
             max_severity="ERROR",
             affected_services={"payment-service"},
@@ -136,8 +136,8 @@ class TestRCAPipeline:
             id="cluster-002",
             template="timeout <*>ms",
             template_tokens=["timeout", "<*>ms"],
-            first_seen=datetime(2024, 1, 15, tzinfo=timezone.utc),
-            last_seen=datetime(2024, 1, 15, tzinfo=timezone.utc),
+            first_seen=datetime(2024, 1, 15, tzinfo=UTC),
+            last_seen=datetime(2024, 1, 15, tzinfo=UTC),
             count=3,
             max_severity="ERROR",
             affected_services={"svc"},
@@ -167,8 +167,8 @@ class TestRCAPipeline:
             id="c3",
             template="error <*>",
             template_tokens=["error", "<*>"],
-            first_seen=datetime(2024, 1, 15, tzinfo=timezone.utc),
-            last_seen=datetime(2024, 1, 15, tzinfo=timezone.utc),
+            first_seen=datetime(2024, 1, 15, tzinfo=UTC),
+            last_seen=datetime(2024, 1, 15, tzinfo=UTC),
             count=1,
             max_severity="ERROR",
             affected_services={"svc"},
