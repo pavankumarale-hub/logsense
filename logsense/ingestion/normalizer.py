@@ -5,7 +5,7 @@ names extracted from different formats. This module applies a final
 normalization to guarantee a stable schema regardless of source format.
 """
 
-from .models import LogEntry, SEVERITY_ORDER
+from .models import LogEntry
 
 _LEVEL_ALIASES: dict[str, str] = {
     "TRACE": "DEBUG",
