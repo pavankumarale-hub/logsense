@@ -2,11 +2,8 @@
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from functools import partial
 from typing import Any, Literal
-
-
-def _now_utc() -> datetime:
-    return datetime.now(UTC)
 
 
 @dataclass
@@ -17,7 +14,7 @@ class IncidentDraft:
     payload: dict[str, Any]
     status: Literal["draft", "submitted"] = "draft"
     external_url: str | None = None
-    created_at: datetime = field(default_factory=_now_utc)
+    created_at: datetime = field(default_factory=partial(datetime.now, UTC))
 
     def to_dict(self) -> dict[str, Any]:
         return {
