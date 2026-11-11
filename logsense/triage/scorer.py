@@ -36,7 +36,7 @@ _LOG1P_FREQ_CAP = math.log1p(_FREQ_CAP)    # precomputed denominator
 _DECAY_RATE = _LN2 / _HALF_LIFE_HOURS      # precomputed decay coefficient
 
 
-def score_cluster(cluster: "Cluster", now: datetime) -> float:
+def score_cluster(cluster: Cluster, now: datetime) -> float:
     freq_score = min(math.log1p(cluster.count) / _LOG1P_FREQ_CAP, 1.0)
 
     age_hours = max((now - cluster.last_seen).total_seconds() / 3600, 0.0)
