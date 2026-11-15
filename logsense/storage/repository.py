@@ -172,16 +172,6 @@ class LogRepository:
             await conn.commit()
         return db_id
 
-    async def add_cluster_members(self, cluster_id: str, entry_ids: list[str]) -> None:
-        if not entry_ids:
-            return
-        async with self._db.connection() as conn:
-            await conn.executemany(
-                "INSERT OR IGNORE INTO cluster_members (cluster_id, log_entry_id) VALUES (?,?)",
-                [(cluster_id, eid) for eid in entry_ids],
-            )
-            await conn.commit()
-
     async def get_clusters(
         self, limit: int = 50, min_risk_score: float = 0.0
     ) -> list[dict[str, Any]]:
