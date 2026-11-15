@@ -140,11 +140,8 @@ class DrainParser:
     # ------------------------------------------------------------------ #
 
     def _route(self, tokens: list[str]) -> LogGroup:
-        # Level 1: token count bucket
-        count_node = self._root.children.setdefault(str(len(tokens)), PrefixNode())
-
-        # Levels 2..depth-1: prefix walk
-        node = count_node
+        # Level 1: token count bucket; levels 2..depth-1: prefix walk
+        node = self._root.children.setdefault(str(len(tokens)), PrefixNode())
         for tok in tokens[: self._depth - 1]:
             key = tok if (tok in node.children or len(node.children) < self._max_children) else _WILDCARD
             node.children.setdefault(key, PrefixNode())
