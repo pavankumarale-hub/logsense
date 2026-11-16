@@ -3,7 +3,7 @@
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Self
 
 
 @dataclass
@@ -20,7 +20,7 @@ class Cluster:
     risk_score: float = 0.0
 
     @classmethod
-    def from_row(cls, row: dict[str, Any]) -> "Cluster":
+    def from_row(cls, row: dict[str, Any]) -> Self:
         return cls(
             id=row["id"],
             template=row["template"],

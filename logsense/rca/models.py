@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 ConfidenceLevel = Literal["low", "medium", "high"]
 
@@ -22,7 +22,7 @@ class RCAResult:
     generated_at: datetime
 
     @classmethod
-    def from_row(cls, row: dict[str, Any]) -> "RCAResult":
+    def from_row(cls, row: dict[str, Any]) -> Self:
         confidence: ConfidenceLevel = row["confidence"]  # type: ignore[assignment]
         return cls(
             id=row["id"],
