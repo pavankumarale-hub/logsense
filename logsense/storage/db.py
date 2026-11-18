@@ -8,9 +8,9 @@ abstracts the difference. See docs/adr/0001-clustering-approach.md for the
 storage tradeoff discussion.
 """
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
 
 import aiosqlite
 
