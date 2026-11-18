@@ -52,7 +52,7 @@ class ClusterEngine:
                 cluster = Cluster(
                     id=str(uuid.uuid4()),
                     template=group.template,
-                    template_tokens=list(group.template_tokens),
+                    template_tokens=group.template_tokens,
                     first_seen=entry.timestamp,
                     last_seen=entry.timestamp,
                     count=1,
